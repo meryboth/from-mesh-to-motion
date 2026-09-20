@@ -11,6 +11,11 @@ dependencies = ["Pillow>=10.0", "numpy>=1.24"]
 Repository = "https://github.com/meryboth/from-mesh-to-motion"
 
 [tool.comfy]
+# PublisherId is the handle after the "@" on the registry profile. It is
+# permanent, and publishing fails if it does not match the account that issued
+# the API key.
 PublisherId = "meryboth"
 DisplayName = "From Mesh to Motion"
-Icon = ""
+# The graph uses Get Video Components and the MiniMax partner node, both of
+# which need a reasonably current ComfyUI.
+requires-comfyui = ">=0.3.40"

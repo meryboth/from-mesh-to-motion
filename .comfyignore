@@ -1,0 +1,8 @@
+# The registry package is the node pack, not the research record. Everything
+# here stays in the GitHub repo and out of what users install.
+out/                      # 54 MB of example renders, meshes and clips
+docs/                     # the write-up and its GIFs
+tests/
+scripts/build_docs_assets.py
+scripts/compare_runs.py
+.venv/

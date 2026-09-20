@@ -296,6 +296,39 @@ Measured on the demo run, not guessed:
 
 ---
 
+## Publishing to the Comfy Registry
+
+Published as **`from-mesh-to-motion`** under the publisher **`@meryboth`**. Releases are automatic:
+bump `version` in `pyproject.toml`, push to `main`, and `.github/workflows/publish_action.yml` does
+the rest. A version lands as *pending* while the registry scans it, then goes active.
+
+`.comfyignore` keeps the research record out of the installed package — `out/` alone is 54 MB of
+renders, meshes and clips. What ships is the node pack and the workflows, 191 KB.
+
+To set this up on another repo:
+
+1. Create a publisher at [registry.comfy.org](https://registry.comfy.org). The handle after the `@`
+   is your **PublisherId**; it is permanent and must match `[tool.comfy] PublisherId`.
+2. Create an API key on the publisher's page and store it once — it cannot be retrieved later.
+3. Add it as the repo secret `REGISTRY_ACCESS_TOKEN` (Settings → Secrets and variables → Actions).
+4. Bump `version` and push, or run `pip install comfy-cli && comfy node publish`.
+
+If the action fails with `Option '--token' requires an argument`, the secret is missing or misnamed.
+That is what an empty `REGISTRY_ACCESS_TOKEN` looks like from inside the runner.
+
+### The other API key
+
+There are two, and they are unrelated. The one above publishes the pack. Running the graph needs a
+different one: `workflows/02_triptych_to_keyframes.json` calls MiniMax H3 through a **partner API
+node**, which bills a Comfy account. In ComfyUI that key lives in **Settings → API Keys → Comfy API
+Key**, or you sign in to your Comfy account from the desktop app and it is handled for you. It is
+never stored in this repo.
+
+Only the video step needs it. `anchors`, `triptych`, `keyframes`, `qa` and `prompt` all run locally
+and free, so the pack is useful without any key at all — you just have to bring your own clip.
+
+---
+
 ## Rights
 
 Code: MIT. The generated mascot, its mesh, and the example renders: CC0.
