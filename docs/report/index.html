@@ -229,6 +229,72 @@ panels against the source anchors, per 255. Regenerate with
   worth more than the pixels: a sheared sheet still looks plausible.</p>
 </div>
 
+<h2>Does it work on anything else?</h2>
+<p class="sub">Two more characters, chosen to break different things.</p>
+
+<p>The pipeline was built around one mascot, which proves nothing about the pipeline. Two further
+characters were invented to attack the parts most likely to be load-bearing on that one subject: a
+<strong>quadruped</strong>, which has no obvious front and whose side view is far wider than its
+front, and a <strong>wire-thin robot with a loose scarf</strong>, whose limbs are a few pixels
+across in profile and whose cloth gives the video model something to invent.</p>
+
+<figure>
+  <img src="assets/generality.jpg" alt="Rest-pose triptychs for the mascot, the quadruped and the thin robot">
+  <figcaption>The three rest-pose canvases. Note the ratios differ: the squat characters land on
+  21:9 and the tall thin one on 16:9.</figcaption>
+</figure>
+
+<table>
+  <thead><tr><th>Character</th><th>mean drift</th><th>max drift</th><th>worst view</th><th>gate</th></tr></thead>
+  <tbody>
+    <tr><td>mascot (built on)</td><td class="num">0.0109</td><td class="num">0.0209</td><td>back</td><td class="win">PASS</td></tr>
+    <tr><td>quadruped</td><td class="num">0.0119</td><td class="num">0.0228</td><td>back</td><td class="win">PASS</td></tr>
+    <tr><td>thin robot</td><td class="num">0.0191</td><td class="num">0.0522</td><td>side</td><td class="lose">FAIL</td></tr>
+  </tbody>
+</table>
+
+<h3>The quadruped works, and works better than the character it was built on</h3>
+<p>Meshy oriented the mesh so its front faced the camera even though it was given a side-on concept
+image, so no yaw correction was needed. The shared crop sized itself to the long tail in the side
+view, which letterboxes the front and back panels but keeps the scale shared — which is the point.
+The rear-up onto the hind legs reads clearly and simultaneously in all three panels.</p>
+
+<figure>
+  <img src="assets/quadruped-motion.gif" alt="A quadruped creature rearing onto its hind legs in three synchronised panels">
+  <figcaption>The whole body leaves the ground here — which also retires an earlier claim on this
+  page that large translations get resisted. They got resisted on <em>one</em> character with
+  <em>one</em> prompt.</figcaption>
+</figure>
+
+<h3>The thin robot fails, and it is worth knowing why</h3>
+<p>Two things break. Its profile is a few pixels wide, so the side panel simply does not carry
+enough information for the model to keep hold of — it drifts worst there, at 0.052. And the loose
+scarf is an invitation: it billows differently in each panel, grows into a cape in the back view,
+and the head visor flickers on and off between keyframes. Both show up in the drift number because
+both change how much red is in the frame.</p>
+
+<figure>
+  <img src="assets/thin-robot-motion.gif" alt="A thin robot waving, with an unstable scarf and a near-invisible profile">
+  <figcaption>The scarf is doing whatever it likes and the profile panel is close to useless. The
+  pose itself is still synchronised — which is the encouraging part of a failing case.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>The asymmetric test passed on all three</strong>
+  <p>The robot was given a deliberately one-sided motion: raise the <em>right</em> arm and wave,
+  left arm still. If the panels were drifting apart, the raised arm would land on the wrong side in
+  the back view. It does not — front shows it on frame-left, back shows it mirrored on frame-right,
+  every keyframe. The central claim survives the character that fails the gate.</p>
+</div>
+
+<div class="callout warn">
+  <strong>So: what is this good for</strong>
+  <p>Chunky subjects with readable silhouettes from every angle, rigid or near-rigid, humanoid or
+  not. It is <em>not</em> reliable for wire-thin limbs, and loose cloth, hair or anything else the
+  video model can treat as free to animate will drift and take the identity number with it. Run
+  <code>pipeline qa</code> before rigging; that is what it is for.</p>
+</div>
+
 <h2>What doesn't work</h2>
 <p class="sub">Measured on the demo runs, not guessed.</p>
 
@@ -251,11 +317,12 @@ glance and not only a number.</p>
   hand before handing a sheet to a rigger.</figcaption>
 </figure>
 
-<h3>Large translations get resisted</h3>
-<p>The model moves limbs readily and moves the whole body reluctantly. An early prompt asking for a
-jump produced arms going overhead with the feet planted on the ground. Writing the action first,
-before the layout constraints, got an actual jump out of it — at the cost of the side panel above.
-The layout instructions are load-bearing but they crowd out the motion when they come first.</p>
+<h3>Large translations are unreliable, not impossible</h3>
+<p>An early prompt asking the mascot to jump produced arms going overhead with the feet planted.
+Writing the action first, ahead of the layout constraints, got a real jump — at the cost of the side
+panel. But the quadruped lifted its entire body off the ground on the first attempt, so this is not
+a hard limit of the method; it varies with the subject and how naturally the motion reads. The
+layout instructions are load-bearing and they do crowd out the motion when they come first.</p>
 
 <h3>One clip is one motion beat</h3>
 <p>Five seconds at sixteen keyframes is a single beat. Longer motions want several runs stitched on

@@ -1,0 +1,274 @@
+{
+  "report": {
+    "views": {
+      "front": {
+        "panels": 16,
+        "drift_mean": 0.0155,
+        "drift_max": 0.0288
+      },
+      "side": {
+        "panels": 16,
+        "drift_mean": 0.0223,
+        "drift_max": 0.0522
+      },
+      "back": {
+        "panels": 16,
+        "drift_mean": 0.0195,
+        "drift_max": 0.044
+      }
+    },
+    "overall": {
+      "panels": 48,
+      "drift_mean": 0.0191,
+      "drift_max": 0.0522
+    },
+    "gate": {
+      "pass": false,
+      "notes": [
+        "identity drift peaks at 0.052 (ceiling 0.030) -- a repair pass may help"
+      ]
+    }
+  },
+  "rows": [
+    {
+      "drift": 0.0042,
+      "index": 0,
+      "view": "front"
+    },
+    {
+      "drift": 0.0075,
+      "index": 1,
+      "view": "front"
+    },
+    {
+      "drift": 0.008,
+      "index": 2,
+      "view": "front"
+    },
+    {
+      "drift": 0.0109,
+      "index": 3,
+      "view": "front"
+    },
+    {
+      "drift": 0.0183,
+      "index": 4,
+      "view": "front"
+    },
+    {
+      "drift": 0.0288,
+      "index": 5,
+      "view": "front"
+    },
+    {
+      "drift": 0.0244,
+      "index": 6,
+      "view": "front"
+    },
+    {
+      "drift": 0.015,
+      "index": 7,
+      "view": "front"
+    },
+    {
+      "drift": 0.0118,
+      "index": 8,
+      "view": "front"
+    },
+    {
+      "drift": 0.0178,
+      "index": 9,
+      "view": "front"
+    },
+    {
+      "drift": 0.0194,
+      "index": 10,
+      "view": "front"
+    },
+    {
+      "drift": 0.0278,
+      "index": 11,
+      "view": "front"
+    },
+    {
+      "drift": 0.0188,
+      "index": 12,
+      "view": "front"
+    },
+    {
+      "drift": 0.0145,
+      "index": 13,
+      "view": "front"
+    },
+    {
+      "drift": 0.0107,
+      "index": 14,
+      "view": "front"
+    },
+    {
+      "drift": 0.0106,
+      "index": 15,
+      "view": "front"
+    },
+    {
+      "drift": 0.0005,
+      "index": 0,
+      "view": "side"
+    },
+    {
+      "drift": 0.0063,
+      "index": 1,
+      "view": "side"
+    },
+    {
+      "drift": 0.0121,
+      "index": 2,
+      "view": "side"
+    },
+    {
+      "drift": 0.0112,
+      "index": 3,
+      "view": "side"
+    },
+    {
+      "drift": 0.021,
+      "index": 4,
+      "view": "side"
+    },
+    {
+      "drift": 0.0389,
+      "index": 5,
+      "view": "side"
+    },
+    {
+      "drift": 0.0391,
+      "index": 6,
+      "view": "side"
+    },
+    {
+      "drift": 0.0476,
+      "index": 7,
+      "view": "side"
+    },
+    {
+      "drift": 0.0244,
+      "index": 8,
+      "view": "side"
+    },
+    {
+      "drift": 0.0228,
+      "index": 9,
+      "view": "side"
+    },
+    {
+      "drift": 0.0522,
+      "index": 10,
+      "view": "side"
+    },
+    {
+      "drift": 0.0311,
+      "index": 11,
+      "view": "side"
+    },
+    {
+      "drift": 0.0205,
+      "index": 12,
+      "view": "side"
+    },
+    {
+      "drift": 0.0144,
+      "index": 13,
+      "view": "side"
+    },
+    {
+      "drift": 0.0082,
+      "index": 14,
+      "view": "side"
+    },
+    {
+      "drift": 0.0063,
+      "index": 15,
+      "view": "side"
+    },
+    {
+      "drift": 0.0003,
+      "index": 0,
+      "view": "back"
+    },
+    {
+      "drift": 0.003,
+      "index": 1,
+      "view": "back"
+    },
+    {
+      "drift": 0.0046,
+      "index": 2,
+      "view": "back"
+    },
+    {
+      "drift": 0.0071,
+      "index": 3,
+      "view": "back"
+    },
+    {
+      "drift": 0.0298,
+      "index": 4,
+      "view": "back"
+    },
+    {
+      "drift": 0.0353,
+      "index": 5,
+      "view": "back"
+    },
+    {
+      "drift": 0.044,
+      "index": 6,
+      "view": "back"
+    },
+    {
+      "drift": 0.0302,
+      "index": 7,
+      "view": "back"
+    },
+    {
+      "drift": 0.0148,
+      "index": 8,
+      "view": "back"
+    },
+    {
+      "drift": 0.0196,
+      "index": 9,
+      "view": "back"
+    },
+    {
+      "drift": 0.0343,
+      "index": 10,
+      "view": "back"
+    },
+    {
+      "drift": 0.0273,
+      "index": 11,
+      "view": "back"
+    },
+    {
+      "drift": 0.0318,
+      "index": 12,
+      "view": "back"
+    },
+    {
+      "drift": 0.0128,
+      "index": 13,
+      "view": "back"
+    },
+    {
+      "drift": 0.0091,
+      "index": 14,
+      "view": "back"
+    },
+    {
+      "drift": 0.0075,
+      "index": 15,
+      "view": "back"
+    }
+  ]
+}

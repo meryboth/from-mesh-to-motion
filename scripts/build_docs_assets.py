@@ -304,11 +304,55 @@ def gif_sheet_step():
           + format(os.path.getsize(dest) / 1e6, ".1f") + " MB")
 
 
+def fig_generality():
+    """Three characters, three rest-pose triptychs, one figure.
+
+    The pipeline was built around one character, which proves nothing about it.
+    These are the two it was tested against afterwards, chosen to break different
+    things: a quadruped has no obvious front, and a wire-thin robot with loose
+    cloth is the hardest thing to hold together in a profile view.
+    """
+    specs = [
+        ("out/03_triptych/triptych_rest.png", "mascot - 21:9 - PASS"),
+        ("out/B_quadruped/03_triptych/triptych_rest.png", "quadruped - 21:9 - PASS"),
+        ("out/C_robot/03_triptych/triptych_rest.png", "thin robot - 16:9 - FAIL"),
+    ]
+    rows = []
+    for path, cap in specs:
+        full = os.path.join(REPO, path)
+        if not os.path.exists(full):
+            print("  (skipped generality: missing " + path + ")")
+            return
+        rows.append((Image.open(full).convert("RGB"), cap))
+
+    width, pad = 1500, 16
+    scaled = [(im.resize((width - 2 * pad,
+                          int(im.height * (width - 2 * pad) / im.width)), Image.LANCZOS), cap)
+              for im, cap in rows]
+    height = pad + sum(im.height + 30 + pad for im, _ in scaled)
+    canvas = Image.new("RGB", (width, height), BG)
+    d = ImageDraw.Draw(canvas)
+    y = pad
+    for im, cap in scaled:
+        d.text((pad, y), cap, fill=INK, font=font(17, bold=True))
+        canvas.paste(im, (pad, y + 26))
+        y += im.height + 30 + pad
+    save(canvas, "generality.jpg")
+
+
+def gif_generality():
+    for key, src in [("B_quadruped", "quadruped"), ("C_robot", "thin-robot")]:
+        path = os.path.join(REPO, "out", key, "04_video", "motion.mp4")
+        if os.path.exists(path):
+            _ffmpeg_gif(path, os.path.join(OUT, src + "-motion.gif"), width=720, fps=10)
+
+
 def main():
     print("building docs assets ->", os.path.relpath(OUT, REPO))
     for fn in (fig_turnaround, fig_triptych, fig_sheet_hero,
                fig_side_drift, fig_registration,
-               gif_triptych_motion, gif_side_drift, gif_sheet_step):
+               gif_triptych_motion, gif_side_drift, gif_sheet_step,
+               fig_generality, gif_generality):
         try:
             fn()
         except FileNotFoundError as exc:

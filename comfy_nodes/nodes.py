@@ -87,10 +87,11 @@ class TriptychCompose:
                 "pad": ("INT", {"default": 20, "min": 0, "max": 256}),
                 "background": ("STRING", {"default": "#E4E4E6"}),
                 "target_ratio": ("STRING", {
-                    "default": "21:9",
-                    "tooltip": "Pad vertically to this aspect, or 'none'. Partner "
-                               "video APIs centre-crop an off-menu canvas, which "
-                               "eats the outer panels.",
+                    "default": "21:9,16:9,4:3,1:1",
+                    "tooltip": "Menu of aspect ratios; the closest to the strip is "
+                               "used and the canvas is padded to it. Partner video "
+                               "APIs centre-crop an off-menu canvas, which eats the "
+                               "outer panels.",
                 }),
                 "crop_margin": ("FLOAT", {"default": 0.08, "min": 0.0, "max": 0.5, "step": 0.01}),
             }
@@ -135,21 +136,13 @@ class TriptychCompose:
         out_path = os.path.join(tmp, "triptych.png")
         layout = sheet_mod.compose(
             paths, order, out_path, gutter=gutter, pad=pad,
-            background=bg, crop=crop, target_ratio=_ratio(target_ratio),
+            background=bg, crop=crop, target_ratio=sheet_mod.parse_ratio(target_ratio),
         )
         return (to_tensor(Image.open(out_path)), json.dumps(layout.to_json()))
 
 
 
 
-def _ratio(spec):
-    spec = (spec or "").strip().lower()
-    if not spec or spec in ("none", "free", "0"):
-        return None
-    if ":" in spec:
-        a, b = spec.split(":")
-        return float(a) / float(b)
-    return float(spec)
 
 
 def _scratch_dir() -> str:

@@ -1,0 +1,44 @@
+{
+  "ceiling": 0.03,
+  "runs": [
+    {
+      "character": "mascot",
+      "run": "out/05_keyframes",
+      "drift_mean": 0.0109,
+      "drift_max": 0.0209,
+      "per_view": {
+        "front": 0.0194,
+        "side": 0.0188,
+        "back": 0.0209
+      },
+      "worst_view": "back",
+      "pass": true
+    },
+    {
+      "character": "quadruped",
+      "run": "out/B_quadruped/05_keyframes",
+      "drift_mean": 0.0119,
+      "drift_max": 0.0228,
+      "per_view": {
+        "front": 0.0221,
+        "side": 0.0122,
+        "back": 0.0228
+      },
+      "worst_view": "back",
+      "pass": true
+    },
+    {
+      "character": "thin-robot",
+      "run": "out/C_robot/05_keyframes",
+      "drift_mean": 0.0191,
+      "drift_max": 0.0522,
+      "per_view": {
+        "front": 0.0288,
+        "side": 0.0522,
+        "back": 0.044
+      },
+      "worst_view": "side",
+      "pass": false
+    }
+  ]
+}

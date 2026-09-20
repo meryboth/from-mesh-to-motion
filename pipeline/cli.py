@@ -100,7 +100,7 @@ def cmd_triptych(args) -> None:
     layout = sheet_mod.compose(
         paths, views, out_path,
         gutter=args.gutter, pad=args.pad,
-        crop=crop, target_ratio=_ratio(args.ratio),
+        crop=crop, target_ratio=sheet_mod.parse_ratio(args.ratio),
     )
     print("triptych -> " + out_path)
     print("  canvas " + str(layout.width) + "x" + str(layout.height)
@@ -109,13 +109,6 @@ def cmd_triptych(args) -> None:
     print("\nNext: upload this image and run workflows/03_triptych_to_motion.json")
 
 
-def _ratio(spec: str | None):
-    if not spec or spec.lower() in ("none", "free"):
-        return None
-    if ":" in spec:
-        a, b = spec.split(":")
-        return float(a) / float(b)
-    return float(spec)
 
 
 # -------------------------------------------------------------- keyframes
@@ -279,7 +272,8 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--gutter", type=int, default=20)
     t.add_argument("--pad", type=int, default=20)
     t.add_argument("--crop-margin", type=float, default=0.08)
-    t.add_argument("--ratio", default="21:9", help='Aspect to pad to, or "none"')
+    t.add_argument("--ratio", default="21:9,16:9,4:3,1:1",
+                   help='Menu of aspect ratios to pad to; the closest is used. "none" to skip.')
     t.set_defaults(func=cmd_triptych)
 
     k = sub.add_parser("keyframes", help="Sample the animated triptych into a sheet")

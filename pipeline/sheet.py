@@ -26,6 +26,9 @@ from typing import Iterable, Sequence
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 DEFAULT_BG = (228, 228, 230)
+# The aspect ratios partner video APIs actually accept. compose() picks the
+# one closest to the strip it was given, so the padding stays minimal.
+DEFAULT_RATIOS = [21 / 9, 16 / 9, 4 / 3, 1.0]
 DEFAULT_GUTTER_BG = (228, 228, 230)
 
 
@@ -162,15 +165,16 @@ def compose(
     pad: int = 20,
     background: Sequence[int] = DEFAULT_BG,
     crop: "tuple | None" = None,
-    target_ratio: "float | None" = 21.0 / 9.0,
+    target_ratio=DEFAULT_RATIOS,
 ) -> TriptychLayout:
     """Lay the named views out left to right on one opaque canvas.
 
-    `target_ratio` pads the canvas vertically (never horizontally, which would
-    shrink the panels) until it hits that aspect. Partner video APIs take a fixed
-    menu of aspect ratios; handing one an off-menu canvas gets it centre-cropped
-    or letterboxed, and a centre-cropped triptych loses the outer panels. 21:9 is
-    the widest ratio on most menus and the closest fit for three panels.
+    `target_ratio` is a menu of accepted aspect ratios; the canvas is padded out
+    to whichever is closest. Partner video APIs take a fixed menu, and handing one
+    an off-menu canvas gets it centre-cropped or letterboxed -- a centre-cropped
+    triptych loses its outer panels outright. Which ratio is closest depends on
+    the subject: three panels of a squat character land near 21:9, three of a tall
+    thin one near 16:9. See `fit_ratio`.
     """
     missing = [v for v in order if v not in view_paths]
     if missing:
@@ -190,19 +194,21 @@ def compose(
         )
     pw, ph = images[0].size
 
-    width = pad * 2 + pw * len(images) + gutter * (len(images) - 1)
+    content_w = pw * len(images) + gutter * (len(images) - 1)
+    width = pad * 2 + content_w
     height = pad * 2 + ph
-    pad_y = pad
-    if target_ratio:
-        wanted = int(round(width / target_ratio))
-        if wanted > height:
-            height = wanted
-            pad_y = (height - ph) // 2
+    ratios = parse_ratio(target_ratio) if not isinstance(target_ratio, list) else target_ratio
+    if ratios:
+        width, height = fit_ratio(width, height, ratios)
+
+    # Centre the strip in whatever canvas the ratio asked for, on both axes.
+    pad_x = max(0, (width - content_w) // 2)
+    pad_y = max(0, (height - ph) // 2)
 
     canvas = Image.new("RGB", (width, height), tuple(background))
 
     panels = []
-    x = pad
+    x = pad_x
     for view, im in zip(order, images):
         canvas.paste(im, (x, pad_y))
         panels.append(PanelBox(view=view, x=x, y=pad_y, w=pw, h=ph))
@@ -218,6 +224,59 @@ def compose(
     with open(_layout_path(out_path), "w", encoding="utf-8") as fh:
         json.dump(layout.to_json(), fh, indent=2)
     return layout
+
+
+def fit_ratio(width: int, height: int, target) -> tuple:
+    """Grow a canvas to an accepted aspect ratio, padding whichever axis is short.
+
+    Padding only ever adds background, so the panels keep their pixel size and the
+    shared ortho scale survives.
+
+    `target` may be one ratio or several. Several is the useful case: partner
+    video APIs take a fixed menu of aspect ratios, and which one is cheapest to
+    reach depends entirely on the subject. Three panels of a squat character land
+    near 2.5:1 and want 21:9; three panels of a tall thin one land near 1.7:1 and
+    want 16:9. Padding the tall one out to 21:9 would add a third of a canvas of
+    empty grey and shrink the character in the returned clip.
+
+    The original version of this only padded vertically, so a subject narrower
+    than the target silently missed it -- the thin-robot test case came out at
+    1.68 with a 21:9 target and no complaint. Hence padding both ways.
+    """
+    targets = target if isinstance(target, (list, tuple)) else [target]
+    targets = [float(t) for t in targets if t]
+    if not targets:
+        return width, height
+
+    natural = width / height
+    best = min(targets, key=lambda t: abs(t - natural))
+
+    if natural > best:      # too wide: grow the height
+        height = int(round(width / best))
+    elif natural < best:    # too tall: grow the width
+        width = int(round(height * best))
+    return width, height
+
+
+def parse_ratio(spec) -> "list | None":
+    """Read '21:9', '1.78', '21:9,16:9,1:1' or 'none' into a list of floats."""
+    if spec is None or isinstance(spec, (int, float)):
+        return [float(spec)] if spec else None
+    text = str(spec).strip().lower()
+    if not text or text in ("none", "free", "0"):
+        return None
+
+    out = []
+    for part in text.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if ":" in part:
+            a, b = part.split(":")
+            out.append(float(a) / float(b))
+        else:
+            out.append(float(part))
+    return out or None
 
 
 def _layout_path(image_path: str) -> str:

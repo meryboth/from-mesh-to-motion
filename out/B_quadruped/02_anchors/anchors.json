@@ -1,0 +1,53 @@
+{
+  "mesh": "C:\\dev\\from-mesh-to-motion\\out\\B_quadruped\\01_mesh\\quadruped.glb",
+  "engine": "BLENDER_EEVEE",
+  "size": 768,
+  "ortho_scale": 2.3520175647735595,
+  "yaw_offset": 0.0,
+  "bbox_min": [
+    -0.5168215036392212,
+    -0.9483941793441772,
+    0.0
+  ],
+  "bbox_max": [
+    0.5168215036392212,
+    0.9483941793441772,
+    1.4122300148010254
+  ],
+  "subject_height": 1.4122300148010254,
+  "views": [
+    "front",
+    "side",
+    "back",
+    "left"
+  ],
+  "passes": [
+    "beauty"
+  ],
+  "renders": [
+    {
+      "pass": "beauty",
+      "view": "front",
+      "yaw": 0.0,
+      "file": "C:\\dev\\from-mesh-to-motion\\out\\B_quadruped\\02_anchors\\beauty_front.png"
+    },
+    {
+      "pass": "beauty",
+      "view": "side",
+      "yaw": 90.0,
+      "file": "C:\\dev\\from-mesh-to-motion\\out\\B_quadruped\\02_anchors\\beauty_side.png"
+    },
+    {
+      "pass": "beauty",
+      "view": "back",
+      "yaw": 180.0,
+      "file": "C:\\dev\\from-mesh-to-motion\\out\\B_quadruped\\02_anchors\\beauty_back.png"
+    },
+    {
+      "pass": "beauty",
+      "view": "left",
+      "yaw": 270.0,
+      "file": "C:\\dev\\from-mesh-to-motion\\out\\B_quadruped\\02_anchors\\beauty_left.png"
+    }
+  ]
+}

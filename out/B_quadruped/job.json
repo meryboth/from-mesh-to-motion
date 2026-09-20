@@ -1,0 +1,16 @@
+{
+  "subject": {
+    "name": "B_quadruped"
+  },
+  "motion": {
+    "description": "Rears up onto its hind legs, balances, then drops back onto all fours",
+    "fps": 24,
+    "duration_s": 5,
+    "loop": false
+  },
+  "provenance": {
+    "concept_model": "bfl/flux-2-pro",
+    "mesh_model": "meshy-7",
+    "video_model": "MiniMax H3 (i2v)"
+  }
+}

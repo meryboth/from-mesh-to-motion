@@ -85,6 +85,34 @@ Regenerate the table with `python scripts/build_docs_assets.py`.
 
 ---
 
+## Does it work on anything else?
+
+The pipeline was built around one mascot, so two more characters were invented to attack it: a
+**quadruped** (no obvious front, side view far wider than front) and a **wire-thin robot with a
+loose scarf** (limbs a few pixels across in profile, cloth the model can invent with).
+
+| Character | mean drift | max drift | worst view | gate |
+|---|---|---|---|---|
+| mascot (built on) | 0.0109 | 0.0209 | back | **PASS** |
+| quadruped | 0.0119 | 0.0228 | back | **PASS** |
+| thin robot | 0.0191 | 0.0522 | side | **FAIL** |
+
+The quadruped works, and slightly better than the character the pipeline was built on — it even
+lifted its whole body off the ground, retiring an earlier claim here that large translations get
+resisted. The thin robot fails: its profile is too narrow to carry information, and the loose scarf
+billows differently in each panel.
+
+The encouraging part is that the robot's *pose* stayed synchronised anyway. It was given a
+deliberately one-sided motion — raise the right arm, left arm still — and the raised arm appears
+correctly mirrored in the back view on every keyframe. The claim the pipeline rests on survives the
+character that fails the gate.
+
+**So: good for** chunky subjects with a readable silhouette from every angle, rigid or near-rigid,
+humanoid or not. **Not reliable for** wire-thin limbs, or loose cloth and hair. Run
+`python -m pipeline qa` before rigging.
+
+---
+
 ## Install
 
 ```bash

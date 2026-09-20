@@ -1,0 +1,16 @@
+{
+  "subject": {
+    "name": "C_robot"
+  },
+  "motion": {
+    "description": "Raises its right arm and waves twice, then lowers it",
+    "fps": 24,
+    "duration_s": 5,
+    "loop": false
+  },
+  "provenance": {
+    "concept_model": "bfl/flux-2-pro",
+    "mesh_model": "meshy-7",
+    "video_model": "MiniMax H3 (i2v)"
+  }
+}
