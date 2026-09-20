@@ -4,6 +4,13 @@ Turn one rest-pose 3D mesh into a **keyframe sheet** an auto-rigging tool can an
 16 keyframes, three orthographic views each, all in register. It runs as **one ComfyUI graph**
 plus a headless Blender pass.
 
+**Published on the [Comfy Registry](https://registry.comfy.org/nodes/from-mesh-to-motion)** as
+`from-mesh-to-motion` under `@meryboth`:
+
+```bash
+comfy node install from-mesh-to-motion
+```
+
 ![The three-panel canvas animating in step](docs/report/assets/triptych-motion.gif)
 
 <sub>One canvas, three orthographic views, animated in a single pass. Nothing enforces that the
@@ -115,6 +122,18 @@ humanoid or not. **Not reliable for** wire-thin limbs, or loose cloth and hair. 
 
 ## Install
 
+For the ComfyUI nodes, install from the registry — via ComfyUI Manager, or:
+
+```bash
+comfy node install from-mesh-to-motion
+```
+
+The seven nodes appear under **from-mesh-to-motion**. Cloning into `ComfyUI/custom_nodes/` works
+too, and is the right choice if you want the example assets and the write-up, which the registry
+package deliberately leaves out.
+
+For the CLI and the Blender pass:
+
 ```bash
 git clone https://github.com/meryboth/from-mesh-to-motion
 cd from-mesh-to-motion
@@ -124,8 +143,8 @@ pip install -r requirements.txt
 Blender 4.2+ is needed for the anchor renders — no add-ons, no GPU. The pipeline finds it on
 `PATH`, in `$BLENDER`, or in the usual install locations.
 
-To use the ComfyUI nodes, clone the repository into `ComfyUI/custom_nodes/` instead and restart
-ComfyUI. The six nodes appear under **from-mesh-to-motion**.
+Your GPU is barely involved: the six local nodes are Pillow and numpy, and the one heavy step is a
+partner API node that runs on Comfy's side. A 6 GB laptop card is plenty.
 
 ---
 
@@ -261,7 +280,7 @@ paste next to the sheet in Astra:
 ```
 blender/render_ortho.py     headless orthographic turnaround renderer
 pipeline/                   sheet geometry, video sampling, manifest, CLI
-comfy_nodes/                the six ComfyUI nodes
+comfy_nodes/                the seven ComfyUI nodes
 workflows/                  editor graphs, plus API-format copies under api/
 scripts/build_workflows.py  generates both formats from one spec
 tests/test_nodes.py         round-trip test, loaded the way ComfyUI loads it
@@ -298,7 +317,8 @@ Measured on the demo run, not guessed:
 
 ## Publishing to the Comfy Registry
 
-Published as **`from-mesh-to-motion`** under the publisher **`@meryboth`**. Releases are automatic:
+Live at [registry.comfy.org/nodes/from-mesh-to-motion](https://registry.comfy.org/nodes/from-mesh-to-motion),
+published as **`from-mesh-to-motion`** under the publisher **`@meryboth`**. Releases are automatic:
 bump `version` in `pyproject.toml`, push to `main`, and `.github/workflows/publish_action.yml` does
 the rest. A version lands as *pending* while the registry scans it, then goes active.
 

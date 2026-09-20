@@ -94,6 +94,7 @@ footer{border-top:1px solid var(--line); margin-top:72px; padding:32px 0 72px;
     <div class="meta">
       <span>September 2026</span>
       <span><a href="https://github.com/meryboth/from-mesh-to-motion">github.com/meryboth/from-mesh-to-motion</a></span>
+      <span><a href="https://registry.comfy.org/nodes/from-mesh-to-motion">Comfy Registry: @meryboth/from-mesh-to-motion</a></span>
       <span>MIT · assets CC0</span>
     </div>
   </div>
@@ -502,9 +503,21 @@ python -m pipeline triptych  --anchors out/02_anchors      --out out/03_triptych
 python -m pipeline keyframes --video motion.mp4 \
     --triptych out/03_triptych/triptych_rest.png -n 16 --out out/05_keyframes</code></pre>
 
-<p>Or open <code>workflows/02_triptych_to_keyframes.json</code> in ComfyUI, which does stages 3–6
-in one graph. The six nodes install by cloning the repository into
-<code>ComfyUI/custom_nodes/</code>.</p>
+<p>Or open <code>workflows/02_triptych_to_keyframes.json</code> in ComfyUI, which does stages 3–6 in
+one graph. The node pack is published on the
+<a href="https://registry.comfy.org/nodes/from-mesh-to-motion">Comfy Registry</a>, so it installs
+through ComfyUI Manager or with one command:</p>
+
+<pre><code>comfy node install from-mesh-to-motion</code></pre>
+
+<p>The registry package is the seven nodes and the workflows, 191&nbsp;KB. The example renders,
+meshes, clips and this write-up stay in the GitHub repository — they are the research record, and
+they have no business in what somebody installs. Cloning into <code>ComfyUI/custom_nodes/</code>
+gets you both.</p>
+
+<p>The GPU is barely involved. The six local nodes are Pillow and numpy; the one heavy step is a
+partner API node that runs on Comfy's side, so a 6&nbsp;GB laptop card is enough for the whole
+graph.</p>
 
 <footer class="wrap">
   <p>Code MIT. The mascot, its mesh and the example renders are CC0 — they were generated for this

@@ -1,6 +1,6 @@
 """from-mesh-to-motion -- ComfyUI custom node pack.
 
-Cloning this repository into ComfyUI/custom_nodes/ registers the six nodes that
+Cloning this repository into ComfyUI/custom_nodes/ registers the seven nodes that
 turn a rest-pose mesh into a keyframe sheet a rigging tool can animate from.
 """
 
