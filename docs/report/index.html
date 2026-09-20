@@ -326,7 +326,9 @@ layout instructions are load-bearing and they do crowd out the motion when they 
 
 <h3>One clip is one motion beat</h3>
 <p>Five seconds at sixteen keyframes is a single beat. Longer motions want several runs stitched on
-shared end poses, which this repository does not do.</p>
+shared end poses, which this repository does not do. Note that five seconds was a choice, not a
+ceiling — the model accepts four to fifteen, and nothing here measured what happens at the top of
+that range.</p>
 
 <h3>Identity does not drift — and the repair pass makes it worse</h3>
 <p>This one was written down backwards first, so the correction is worth the space.</p>
@@ -396,7 +398,7 @@ prevent. So the scaffolding is generated and the user writes one field:</p>
 
 <pre><code>"action": "raises its right arm and waves twice, then lowers it"</code></pre>
 
-<p>Two details in that template are load-bearing and were arrived at by running it. <strong>The
+<p>That field is the <strong>Motion Prompt</strong> node in the graph, and <code>motion.action</code> in <code>config/job.json</code> outside it. Two details in that template are load-bearing and were arrived at by running it. <strong>The
 action goes first</strong> — with the constraints ahead of it, the crouch-and-jump prompt produced
 arms overhead and feet that never left the ground. And the <strong>background is described from the
 triptych's own layout</strong> rather than typed, so the prompt cannot call a grey canvas white;
@@ -406,6 +408,66 @@ a model that repaints the background breaks the content-box detection the split 
 text, so a sheet cannot claim one motion in its provenance and show another in its frames. The CLI
 half prints the identical string — <code>python -m pipeline prompt</code> — because both call one
 builder.</p>
+
+<h2>What can actually be animated</h2>
+<p class="sub">Four motions were tested. The envelope is narrower than that makes it sound.</p>
+
+<p>Some of what follows is a limit of the video model and might stop being true next year. The rest
+is a limit of the <em>method</em> and will not, because it follows from what a fixed orthographic
+camera is. The two are worth keeping apart.</p>
+
+<h3>Structural — not that it comes out badly, but that it does not apply</h3>
+
+<p><strong>The character cannot travel.</strong> The orthographic camera is fixed and framed on the
+rest pose. A walk cycle <em>in place</em> is fine; walking across the frame leaves the panel and
+gets cropped. This is not a weakness of the model — it is what a locked-off orthographic camera
+means.</p>
+
+<p><strong>The character cannot turn on its own axis.</strong> This is the treacherous one. The
+three panels <em>are defined</em> as front, side and back. If the character rotates ninety degrees,
+the panel labelled FRONT is showing a profile, and the sheet lies to the rigging tool with complete
+confidence. This was not tested; it follows from the construction, and it is the failure most likely
+to go unnoticed until an animation comes out wrong.</p>
+
+<p><strong>Pose only, never simulation.</strong> The sheet is authoritative about where the limbs
+are and about nothing else. Cloth, hair, a loose tail — anything the video model treats as free to
+move — will drift between panels. That is measured, not feared: the thin robot's scarf is the main
+reason it fails the gate.</p>
+
+<p><strong>One beat, not a sequence.</strong> Sixteen keyframes sampled evenly across one clip. A
+motion with fast transitions gets undersampled and the rigging tool interpolates between poses that
+were never adjacent.</p>
+
+<h3>Model-dependent — measured, and uneven</h3>
+
+<table>
+  <thead><tr><th>Motion</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Moving limbs</td><td class="win">Reliable on all three characters</td></tr>
+    <tr><td>Moving the whole body</td><td class="lose">Unpredictable — the mascot refused to jump, the quadruped reared up first try</td></tr>
+    <tr><td>Asymmetric motion</td><td class="win">Holds — the mirrored arm lands correctly in the back view</td></tr>
+    <tr><td>Thin silhouettes</td><td class="lose">Fails — a wire-thin profile carries too little to hold on to</td></tr>
+  </tbody>
+</table>
+
+<h3>Untested, and worth saying so</h3>
+<p>An in-place walk cycle — the most obvious use and it was never run. Turning on the spot. Anything
+longer than five seconds. Facial animation, interaction with props, more than one character.</p>
+
+<div class="callout warn">
+  <strong>A correction to an earlier version of this page</strong>
+  <p>This page used to call five seconds "the practical clip length". That was not measured. MiniMax
+  H3 accepts <strong>four to fifteen seconds</strong>; five was the value chosen for every run here
+  and never varied. Drift over a fifteen-second clip is unknown, and since drift is the thing this
+  pipeline gates on, that is a real gap rather than a detail.</p>
+</div>
+
+<div class="callout">
+  <strong>The short version</strong>
+  <p>In-place, single-beat body motion on a chunky subject that reads from every angle. Waving,
+  crouching, stretching, rearing up, nodding, an idle — yes. Walking across frame, turning around, or
+  a choreographed multi-beat sequence — no, and by design rather than by weakness.</p>
+</div>
 
 <h2>The handoff</h2>
 <p class="sub">A folder of PNGs is not a deliverable.</p>

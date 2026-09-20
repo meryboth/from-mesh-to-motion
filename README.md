@@ -184,6 +184,48 @@ so the sheet's provenance cannot claim one motion while the clip shows another.
 
 ---
 
+## What can actually be animated
+
+Four motions were tested, which makes the envelope narrower than the repo might suggest. Some of
+what follows is a limit of the video model and may stop being true; the rest follows from what a
+fixed orthographic camera *is*, and will not.
+
+**Structural — not that it comes out badly, but that it does not apply:**
+
+- **The character cannot travel.** The camera is fixed and framed on the rest pose. A walk cycle
+  *in place* is fine; walking across the frame leaves the panel.
+- **The character cannot turn on its axis.** The panels *are defined* as front, side and back. Rotate
+  the character ninety degrees and the panel labelled FRONT is showing a profile — the sheet then
+  lies to the rigging tool with complete confidence. Untested, but it follows from the construction,
+  and it is the failure most likely to go unnoticed.
+- **Pose only, never simulation.** The sheet is authoritative about limb positions and nothing else.
+  Cloth, hair and loose tails drift between panels — measured, not feared: the robot's scarf is the
+  main reason it fails the gate.
+- **One beat, not a sequence.** Sixteen keyframes across one clip. Fast transitions get undersampled.
+
+**Model-dependent — measured, and uneven:**
+
+| Motion | Result |
+|---|---|
+| Moving limbs | Reliable on all three characters |
+| Moving the whole body | Unpredictable — the mascot refused to jump, the quadruped reared up first try |
+| Asymmetric motion | Holds — the mirrored arm lands correctly in the back view |
+| Thin silhouettes | Fails — a wire-thin profile carries too little to hold on to |
+
+**Untested:** an in-place walk cycle (the most obvious use, never run), turning on the spot, clips
+longer than five seconds, facial animation, props, more than one character.
+
+> **Correction.** An earlier version of this README called five seconds "the practical clip length".
+> That was never measured. MiniMax H3 accepts **four to fifteen seconds**; five was simply the value
+> used for every run here. Drift at fifteen seconds is unknown — and drift is what this pipeline
+> gates on, so that is a gap rather than a detail.
+
+**The short version:** in-place, single-beat body motion on a chunky subject that reads from every
+angle. Waving, crouching, stretching, rearing up, nodding, an idle — yes. Walking across frame,
+turning around, or a choreographed multi-beat sequence — no, and by design.
+
+---
+
 ## The nodes
 
 | Node | In → out |
@@ -239,8 +281,9 @@ Measured on the demo run, not guessed:
 - **Big translations get resisted.** The model reliably moves limbs and reluctantly moves the whole
   body — an early "jump" prompt produced arms going up with the feet planted. Writing the action
   first, before the layout constraints, helps.
-- **Five seconds is the practical clip length**, which at 16 keyframes is one motion beat. Longer
-  motions want several runs stitched on shared end poses.
+- **One clip is one motion beat** — 16 keyframes over five seconds. Longer motions want several runs
+  stitched on shared end poses, which this repo does not do. Five seconds was a choice, not a
+  ceiling: the model takes four to fifteen, and nothing here measured the top of that range.
 - **Identity does not measurably drift, and the repair pass made it worse.** Drift runs 0.008–0.021
   across the sheet, below a tint you would notice. Run on the single panel that crossed the gate
   (0.039), a Qwen-Image-Edit repair pass took it to 0.195 and dropped pose IoU to 0.41 — it re-posed
