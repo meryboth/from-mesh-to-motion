@@ -1,0 +1,39 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "concept_front.png"
+    }
+  },
+  "2": {
+    "class_type": "MeshyImageToModelNode",
+    "inputs": {
+      "model": "meshy-7",
+      "should_remesh": "true",
+      "should_remesh.topology": "quad",
+      "should_remesh.target_polycount": 25000,
+      "symmetry_mode": "on",
+      "should_texture": "true",
+      "should_texture.enable_pbr": false,
+      "should_texture.texture_prompt": "",
+      "should_texture.texture_resolution": "2k",
+      "pose_mode": "A-pose",
+      "seed": 7,
+      "ultra_mode": false,
+      "image": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "SaveGLB",
+    "inputs": {
+      "filename_prefix": "fmm/character",
+      "mesh": [
+        "2",
+        2
+      ]
+    }
+  }
+}

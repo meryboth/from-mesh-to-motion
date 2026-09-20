@@ -1,0 +1,19 @@
+{
+  "subject": {
+    "name": "Mascot",
+    "description": "Stylized clay toy creature, one eye, two antennae, orange backpack",
+    "mesh": "out/01_mesh/mascot.glb",
+    "license": "CC0 - generated for this repo"
+  },
+  "motion": {
+    "description": "Raises both arms overhead, holds, then lowers them back down",
+    "fps": 24,
+    "duration_s": 5,
+    "loop": false
+  },
+  "provenance": {
+    "concept_model": "bfl/flux-2-pro",
+    "mesh_model": "meshy-7",
+    "video_model": "MiniMax H3 (i2v)"
+  }
+}

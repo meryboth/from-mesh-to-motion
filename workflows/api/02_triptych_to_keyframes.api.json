@@ -1,0 +1,208 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "beauty_front.png"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "beauty_side.png"
+    }
+  },
+  "3": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "beauty_back.png"
+    }
+  },
+  "10": {
+    "class_type": "FMM_TriptychCompose",
+    "inputs": {
+      "names": "front,side,back",
+      "gutter": 20,
+      "pad": 20,
+      "background": "#E4E4E6",
+      "target_ratio": "21:9",
+      "crop_margin": 0.08,
+      "view_a": [
+        "1",
+        0
+      ],
+      "view_b": [
+        "2",
+        0
+      ],
+      "view_c": [
+        "3",
+        0
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "fmm/triptych",
+      "images": [
+        "10",
+        0
+      ]
+    }
+  },
+  "20": {
+    "class_type": "MinimaxHailuo03FirstLastFrameNode",
+    "inputs": {
+      "model": "MiniMax H3",
+      "model.prompt": "A three-panel split-screen character turnaround sheet on a flat light grey background. The same clay toy character is shown three times side by side, each panel a locked-off camera on a different angle: left panel front view, centre panel side profile, right panel back view. The camera is completely static in all three panels: no pan, no zoom, no dolly, no rotation, no cuts. The three panels never move, never resize, and never change their viewing angle. All three copies of the character perform one identical action in perfect unison, frame for frame, each seen from its own fixed angle: the character raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down. The character stays centred in its own panel and does not walk out of frame. Nothing is added to the scene.",
+      "model.resolution": "768P",
+      "model.duration": 5,
+      "seed": 11,
+      "watermark": false,
+      "first_frame": [
+        "10",
+        0
+      ]
+    }
+  },
+  "21": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "filename_prefix": "fmm/motion",
+      "format": "auto",
+      "format.codec": "auto",
+      "video": [
+        "20",
+        0
+      ]
+    }
+  },
+  "22": {
+    "class_type": "GetVideoComponents",
+    "inputs": {
+      "video": [
+        "20",
+        0
+      ]
+    }
+  },
+  "23": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "batch_index": 0,
+      "length": 1,
+      "image": [
+        "22",
+        0
+      ]
+    }
+  },
+  "30": {
+    "class_type": "FMM_TriptychRegister",
+    "inputs": {
+      "triptych": [
+        "10",
+        0
+      ],
+      "first_frame": [
+        "23",
+        0
+      ],
+      "layout": [
+        "10",
+        1
+      ]
+    }
+  },
+  "31": {
+    "class_type": "FMM_SampleKeyframes",
+    "inputs": {
+      "count": 16,
+      "fps": 24.0,
+      "loop": false,
+      "frames": [
+        "22",
+        0
+      ],
+      "fps_in": [
+        "22",
+        2
+      ]
+    }
+  },
+  "32": {
+    "class_type": "FMM_TriptychSplit",
+    "inputs": {
+      "frames": [
+        "31",
+        0
+      ],
+      "layout": [
+        "30",
+        0
+      ]
+    }
+  },
+  "40": {
+    "class_type": "FMM_KeyframeSheet",
+    "inputs": {
+      "names": "front,side,back",
+      "timings": "",
+      "thumb": 256,
+      "view_a": [
+        "32",
+        0
+      ],
+      "view_b": [
+        "32",
+        1
+      ],
+      "view_c": [
+        "32",
+        2
+      ]
+    }
+  },
+  "41": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "fmm/keyframe_sheet",
+      "images": [
+        "40",
+        0
+      ]
+    }
+  },
+  "42": {
+    "class_type": "FMM_SaveKeyframeManifest",
+    "inputs": {
+      "names": "front,side,back",
+      "timings": "",
+      "subject_name": "mascot",
+      "motion_description": "Raises both arms overhead, bends its knees, jumps once, lands and lowers its arms",
+      "fps": 24.0,
+      "loop": false,
+      "output_dir": "from_mesh_to_motion",
+      "view_a": [
+        "32",
+        0
+      ],
+      "view_b": [
+        "32",
+        1
+      ],
+      "view_c": [
+        "32",
+        2
+      ],
+      "sheet": [
+        "40",
+        0
+      ],
+      "fps_in": [
+        "22",
+        2
+      ]
+    }
+  }
+}

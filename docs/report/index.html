@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Mesh to Motion</title>
+<meta name="description" content="Turning one rest-pose mesh into a registered keyframe sheet an auto-rigger can animate from — the method, the measurements and the failure modes.">
+<style>
+:root{
+  --bg:#fbfbfc; --surface:#ffffff; --line:#e4e4e8; --line-soft:#eeeef1;
+  --ink:#17171a; --ink-2:#4a4a52; --ink-3:#77777f;
+  --accent:#1f5f8b; --accent-soft:#eaf2f8;
+  --warn:#8a4b12; --warn-soft:#fdf2e6; --good:#1d6b4b; --good-soft:#eaf5ef;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f0f11; --surface:#17171a; --line:#2a2a30; --line-soft:#232328;
+    --ink:#ececf0; --ink-2:#b4b4bd; --ink-3:#85858f;
+    --accent:#6fb3dd; --accent-soft:#16262f;
+    --warn:#e0a86a; --warn-soft:#2a2016; --good:#7cc8a4; --good-soft:#15251d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f0f11; --surface:#17171a; --line:#2a2a30; --line-soft:#232328;
+  --ink:#ececf0; --ink-2:#b4b4bd; --ink-3:#85858f;
+  --accent:#6fb3dd; --accent-soft:#16262f;
+  --warn:#e0a86a; --warn-soft:#2a2016; --good:#7cc8a4; --good-soft:#15251d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:17px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:820px; margin:0 auto; padding:0 16px}
+header{border-bottom:1px solid var(--line); padding:64px 0 40px; margin-bottom:48px}
+h1{font-size:clamp(2rem,5vw,3rem); line-height:1.1; letter-spacing:-.025em; margin:0 0 16px}
+.lede{font-size:1.2rem; color:var(--ink-2); margin:0 0 28px; max-width:62ch}
+.meta{display:flex; flex-wrap:wrap; gap:10px 20px; font-size:.86rem; color:var(--ink-3)}
+.meta a{color:var(--accent)}
+h2{font-size:1.5rem; letter-spacing:-.015em; margin:56px 0 4px; padding-top:8px}
+h3{font-size:1.1rem; margin:36px 0 4px}
+h2+.sub{color:var(--ink-3); font-size:.92rem; margin:0 0 20px}
+p{margin:0 0 18px}
+a{color:var(--accent); text-underline-offset:2px}
+code{font-family:var(--mono); font-size:.87em; background:var(--line-soft);
+  padding:.15em .38em; border-radius:4px}
+pre{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:16px; overflow-x:auto; font-family:var(--mono); font-size:.82rem; line-height:1.6}
+pre code{background:none; padding:0}
+figure{margin:32px 0}
+figure img{width:100%; height:auto; display:block; border:1px solid var(--line);
+  border-radius:10px; background:var(--surface)}
+figcaption{color:var(--ink-3); font-size:.85rem; margin-top:10px; line-height:1.55}
+table{width:100%; border-collapse:collapse; margin:24px 0; font-size:.92rem}
+th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line)}
+th{font-size:.76rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3);
+  border-bottom:1px solid var(--line)}
+td.num{font-family:var(--mono); text-align:right; font-size:.88rem}
+.win{color:var(--good); font-weight:600}
+.lose{color:var(--warn)}
+.callout{border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:16px 18px; border-radius:0 8px 8px 0; margin:28px 0; font-size:.95rem}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout p:last-child{margin-bottom:0}
+.callout strong{display:block; margin-bottom:6px}
+.steps{list-style:none; padding:0; margin:24px 0; counter-reset:s}
+.steps li{counter-increment:s; position:relative; padding:0 0 18px 46px; margin:0}
+.steps li::before{content:counter(s); position:absolute; left:0; top:1px;
+  width:28px; height:28px; border-radius:50%; background:var(--accent-soft);
+  color:var(--accent); font-size:.82rem; font-weight:600;
+  display:flex; align-items:center; justify-content:center}
+.steps b{display:block}
+.steps span{color:var(--ink-2); font-size:.94rem}
+footer{border-top:1px solid var(--line); margin-top:72px; padding:32px 0 72px;
+  color:var(--ink-3); font-size:.86rem}
+.toggle{position:fixed; top:14px; right:14px; z-index:10; background:var(--surface);
+  border:1px solid var(--line); color:var(--ink-2); border-radius:8px;
+  padding:7px 11px; font:inherit; font-size:.78rem; cursor:pointer}
+@media(max-width:640px){body{font-size:16px} header{padding:40px 0 28px}}
+</style>
+</head>
+<body>
+<button class="toggle" id="t">theme</button>
+
+<header>
+  <div class="wrap">
+    <h1>From Mesh to Motion</h1>
+    <p class="lede">One rest-pose mesh becomes sixteen keyframes in three orthographic
+    views, in register, ready for an auto-rigger to animate from. What the method is, what
+    it measured, and where it breaks.</p>
+    <div class="meta">
+      <span>September 2026</span>
+      <span><a href="https://github.com/meryboth/from-mesh-to-motion">github.com/meryboth/from-mesh-to-motion</a></span>
+      <span>MIT · assets CC0</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<h2>The problem</h2>
+<p class="sub">Three views of one pose have to agree, and generated views don't.</p>
+
+<p>Thomas Guilcher <a href="https://x.com/thomas_guilcher/status/2101390478688079969">described a
+way to animate a 3D mesh without keyframing it</a>: rig the mesh, ask an image model for sixteen
+keyframes in three orthographic views, then hand those keyframes back to the rigging tool as
+explicit pose references. The rigging tool stops inferring motion from a sentence and reads it off
+pictures. The posted result is a bunny that moves convincingly, with no manual keyframing.</p>
+
+<p>The middle step is the tedious one, and it is where the method strains. Asking an image model
+for <em>front</em>, then <em>side</em>, then <em>back</em> is three independent requests. They come
+back as three drawings of three slightly different characters standing in three slightly different
+poses. Multiply by sixteen keyframes and the rigging tool is handed a contradiction: the front view
+says the arm is at shoulder height, the side view says it is lower, and the back view has quietly
+changed the character's proportions.</p>
+
+<p>This project automates that middle step and removes the contradiction. The rig and the final
+animation stay where they were — Astra, Meshy, or a person.</p>
+
+<h2>The method</h2>
+<p class="sub">Six stages; the generative one is deliberately the smallest.</p>
+
+<ol class="steps">
+  <li><b>Mesh</b><span>A concept image becomes a textured, A-posed GLB. Optional — bring your own.</span></li>
+  <li><b>Anchors</b><span>Blender renders the rest pose from a true orthographic camera: front, side, back. One scale, one pivot. This is geometry, not generation.</span></li>
+  <li><b>Triptych</b><span>The three views are composited onto a single 21:9 canvas.</span></li>
+  <li><b>Motion</b><span>Image-to-video animates that canvas. All three panels move inside one frame.</span></li>
+  <li><b>Register</b><span>Frame 0 is matched against the submitted canvas to recover however the model reshaped it.</span></li>
+  <li><b>Sheet</b><span>Sixteen frames sampled, panels cut apart, contact sheet plus <code>keyframes.json</code> and <code>handoff.txt</code>.</span></li>
+</ol>
+
+<h2>Never generate a view on its own</h2>
+<p class="sub">The one idea the pipeline is built around.</p>
+
+<p>The obvious way to get three consistent views is to generate one and rotate it, which is a hard
+open problem. This pipeline sidesteps it entirely: the three orthographic renders are glued into a
+single image <em>before the video model ever sees them</em>.</p>
+
+<p>So the model is not animating three characters that need to be kept in agreement. It is
+animating one picture that happens to contain three panels. Panels inside one frame share the
+model's attention, and they stay synchronised as a side effect of being in the same image.</p>
+
+<figure>
+  <img src="assets/triptych-strip.jpg" alt="Three orthographic views of a mascot composited onto one wide canvas">
+  <figcaption>The canvas that is actually submitted: front, side and back on one 1904×816 image.
+  No labels — text inside an image handed to a video model gets garbled and regenerated as
+  nonsense, so labels are added only on the final sheet.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/triptych-motion.gif" alt="The three-panel canvas animating, all panels moving together">
+  <figcaption>The returned clip. Nothing in the pipeline tells the model to keep the panels in
+  agreement, and nothing measures whether it did — the arms rise together because the three views
+  are one picture.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/sheet-step.gif" alt="The sixteen keyframes stepping one at a time across three views">
+  <figcaption>The deliverable, stepped one keyframe at a time. These are the split panels, not the
+  clip, so what is animating here is exactly what lands in the sheet.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/sheet-hero.jpg" alt="Six keyframes of a mascot raising both arms, in front, side and back views">
+  <figcaption>Six of the sixteen keyframes. The arms rise and fall in step across all three
+  panels — that synchronisation was not enforced anywhere, it fell out of the panels sharing
+  a frame.</figcaption>
+</figure>
+
+<h2>The anchors are rendered, not generated</h2>
+<p class="sub">Nothing downstream can restore a property that isn't true at the start.</p>
+
+<p>Blender rotates the <em>object</em> and never moves the camera. That guarantees all three views
+share one orthographic scale and one pivot to the pixel — move the camera per view instead and the
+framing is re-derived each time, drifting a pixel or two, which is enough to make a contact sheet
+lie. The lights are fixed in world space too, so every view is lit from the same direction
+<em>relative to the viewer</em>; a back view lit from behind reads as a different character.</p>
+
+<figure>
+  <img src="assets/turnaround.jpg" alt="Four orthographic renders of the mascot at 0, 90, 180 and 270 degrees">
+  <figcaption>Four yaws, one camera. The eye, the shoulder straps and the backpack are the
+  asymmetries that make a wrong view obvious at a glance — worth building into a test subject.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>Why this matters more than it sounds</strong>
+  <p>A limb at a given height in the front view is at that same height in the side view. That single
+  property is what lets a rigging tool read one pose out of three pictures instead of averaging
+  three guesses. It is free if the views are rendered, and unobtainable if they are generated.</p>
+</div>
+
+<h2>Registering the clip before cutting it</h2>
+<p class="sub">Where the measurement changed the story.</p>
+
+<p>Video models do not return what they were given. The 1904×816 canvas came back as 1536×672 — a
+2.1% <em>non-uniform</em> rescale. The fix is cheap: frame 0 of an image-to-video clip is very
+nearly the input image, so the mapping can be read off the two content bounding boxes and applied
+to every frame. Flat backgrounds make those boxes exact, which is part of why the triptych is
+composited onto one.</p>
+
+<p>The honest result is that <strong>for this clip, registration fixed nothing.</strong> A naive
+stretch back to the canvas size scored slightly better. It earns its place on the other two failure
+modes, where it is roughly twenty times better:</p>
+
+<table>
+  <thead><tr><th>What the model returned</th><th>Split naively</th><th>Registered first</th></tr></thead>
+  <tbody>
+    <tr><td>Rescaled — what MiniMax H3 did</td><td class="num win">0.28</td><td class="num">0.85</td></tr>
+    <tr><td>Letterboxed into 16:9</td><td class="num lose">18.35</td><td class="num win">0.89</td></tr>
+    <tr><td>Centre-cropped by 6%</td><td class="num lose">20.19</td><td class="num win">0.54</td></tr>
+  </tbody>
+</table>
+<p style="margin-top:-8px;color:var(--ink-3);font-size:.85rem">Mean absolute error of the split
+panels against the source anchors, per 255. Regenerate with
+<code>python scripts/build_docs_assets.py</code>.</p>
+
+<figure>
+  <img src="assets/registration.jpg" alt="Three panels comparing the source anchor, a naive split and a registered split">
+  <figcaption>The case registration exists for. A letterboxed return split on the original pixel
+  columns lands on the wrong part of the canvas; registered first, it lands back within a point of
+  the source.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>The useful version of the claim</strong>
+  <p>Registration costs about half a point of resampling error when it is unnecessary and saves
+  about twenty when it is not. It also turns a silent 2% shear into a printed warning, which is
+  worth more than the pixels: a sheared sheet still looks plausible.</p>
+</div>
+
+<h2>What doesn't work</h2>
+<p class="sub">Measured on the demo runs, not guessed.</p>
+
+<h3>The side panel degrades first</h3>
+<p>Front and back hold their shape for the whole clip. The profile is the panel that loses limb
+detail and drifts in angle, and it does so earlier the more the motion asks for. On a gentle
+arms-overhead motion it stays usable; on a full crouch-and-jump it tumbles.</p>
+
+<figure>
+  <img src="assets/side-drift.gif" alt="A jump animation where the centre panel rotates out of profile">
+  <figcaption>The same pipeline on a more demanding motion. Front and back hold; the centre panel
+  rotates out of profile partway through and stops being a side view at all.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/side-drift.jpg" alt="Six keyframes of a jump, with the side panel visibly rotating and losing shape">
+  <figcaption>The same run as stills, at k00, k04 and k08&ndash;k11. This is the panel to check by
+  hand before handing a sheet to a rigger.</figcaption>
+</figure>
+
+<h3>Large translations get resisted</h3>
+<p>The model moves limbs readily and moves the whole body reluctantly. An early prompt asking for a
+jump produced arms going overhead with the feet planted on the ground. Writing the action first,
+before the layout constraints, got an actual jump out of it — at the cost of the side panel above.
+The layout instructions are load-bearing but they crowd out the motion when they come first.</p>
+
+<h3>One clip is one motion beat</h3>
+<p>Five seconds at sixteen keyframes is a single beat. Longer motions want several runs stitched on
+shared end poses, which this repository does not do.</p>
+
+<h3>Identity drifts slowly</h3>
+<p>Over sixteen keyframes the colour and proportions hold well enough to rig from. Over a much
+longer clip they would not. A Qwen-Image-Edit repair pass against the rest-pose anchor is the
+obvious next step and is <em>not</em> implemented here.</p>
+
+<div class="callout warn">
+  <strong>One claim deliberately not made</strong>
+  <p>ComfyUI's <code>Render Mesh</code> plus <code>Create Camera Info</code> looks like it could
+  replace the Blender pass and make the pipeline single-runtime. But the orthographic flag on
+  <code>Create Camera Info</code> is documented for <code>Render Splat</code>, and it was not
+  verified for meshes here. Blender stays the canonical anchor renderer until someone checks.</p>
+</div>
+
+<h2>The handoff</h2>
+<p class="sub">A folder of PNGs is not a deliverable.</p>
+
+<p>What a rigging tool needs is which pose happens when, which view is which, and what the motion
+was meant to be. <code>keyframes.json</code> records all of it, plus every model, seed and prompt
+that touched the sheet, so a run can be argued with months later.
+<code>handoff.txt</code> is the text to paste next to the sheet:</p>
+
+<pre><code>The sheet has 16 keyframes down the page and 3 orthographic views
+across it (front, side, back). Every view shares one camera scale and
+one pivot, so a limb at a given height in the front view is at that
+same height in the side and back views. Read the pose from all 3
+views together, not from the front alone.
+
+Motion: raises both arms overhead, holds, then lowers them back down
+Timing: 5.12s total at 24 fps, keyframe k00 at t=0.
+Loop: no
+
+Do not invent poses between keyframes beyond smooth interpolation, and
+do not change the character's proportions — the mesh is the authority
+on those, the sheet is the authority only on pose.</code></pre>
+
+<h2>Reproduce it</h2>
+
+<pre><code>git clone https://github.com/meryboth/from-mesh-to-motion
+cd from-mesh-to-motion &amp;&amp; pip install -r requirements.txt
+
+python -m pipeline anchors   --mesh out/01_mesh/mascot.glb --out out/02_anchors
+python -m pipeline triptych  --anchors out/02_anchors      --out out/03_triptych
+# animate out/03_triptych/triptych_rest.png
+python -m pipeline keyframes --video motion.mp4 \
+    --triptych out/03_triptych/triptych_rest.png -n 16 --out out/05_keyframes</code></pre>
+
+<p>Or open <code>workflows/02_triptych_to_keyframes.json</code> in ComfyUI, which does stages 3–6
+in one graph. The six nodes install by cloning the repository into
+<code>ComfyUI/custom_nodes/</code>.</p>
+
+<footer class="wrap">
+  <p>Code MIT. The mascot, its mesh and the example renders are CC0 — they were generated for this
+  write-up with Flux 2 Pro, Meshy 7 and MiniMax H3, each subject to its provider's terms when you
+  re-run the pipeline. Nothing here depicts a real person, brand or client project.</p>
+</footer>
+</main>
+
+<script>
+(function(){
+  var b=document.getElementById("t");
+  b.addEventListener("click",function(){
+    var cur=document.documentElement.getAttribute("data-theme");
+    if(!cur){cur=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}
+    document.documentElement.setAttribute("data-theme",cur==="dark"?"light":"dark");
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,995 @@
+{
+  "id": "02_triptych_to_keyframes",
+  "revision": 0,
+  "last_node_id": 42,
+  "last_link_id": 24,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        300,
+        314
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "beauty_front.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "beauty_front.png",
+        "upload": "image"
+      },
+      "title": "Ortho anchor - front"
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        230
+      ],
+      "size": [
+        300,
+        314
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "beauty_side.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "beauty_side.png",
+        "upload": "image"
+      },
+      "title": "Ortho anchor - side"
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        420
+      ],
+      "size": [
+        300,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "beauty_back.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "beauty_back.png",
+        "upload": "image"
+      },
+      "title": "Ortho anchor - back"
+    },
+    {
+      "id": 10,
+      "type": "FMM_TriptychCompose",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        340,
+        200
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "view_a",
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "view_b",
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "view_c",
+          "type": "IMAGE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "triptych",
+          "type": "IMAGE",
+          "links": [
+            4,
+            5,
+            9
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "links": [
+            11
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_TriptychCompose"
+      },
+      "widgets_values": [
+        "front,side,back",
+        20,
+        20,
+        "#E4E4E6",
+        "21:9",
+        0.08
+      ],
+      "widgets_values_named": {
+        "names": "front,side,back",
+        "gutter": 20,
+        "pad": 20,
+        "background": "#E4E4E6",
+        "target_ratio": "21:9",
+        "crop_margin": 0.08
+      },
+      "title": "1 - Compose the triptych"
+    },
+    {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [
+        400,
+        300
+      ],
+      "size": [
+        300,
+        270
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "fmm/triptych"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "fmm/triptych"
+      },
+      "title": "Keep the canvas that was submitted"
+    },
+    {
+      "id": 20,
+      "type": "MinimaxHailuo03FirstLastFrameNode",
+      "pos": [
+        790,
+        40
+      ],
+      "size": [
+        420,
+        330
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "first_frame",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            6,
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MinimaxHailuo03FirstLastFrameNode"
+      },
+      "widgets_values": [
+        "MiniMax H3",
+        "A three-panel split-screen character turnaround sheet on a flat light grey background. The same clay toy character is shown three times side by side, each panel a locked-off camera on a different angle: left panel front view, centre panel side profile, right panel back view. The camera is completely static in all three panels: no pan, no zoom, no dolly, no rotation, no cuts. The three panels never move, never resize, and never change their viewing angle. All three copies of the character perform one identical action in perfect unison, frame for frame, each seen from its own fixed angle: the character raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down. The character stays centred in its own panel and does not walk out of frame. Nothing is added to the scene.",
+        "768P",
+        5,
+        11,
+        "fixed",
+        false
+      ],
+      "widgets_values_named": {
+        "model": "MiniMax H3",
+        "model.prompt": "A three-panel split-screen character turnaround sheet on a flat light grey background. The same clay toy character is shown three times side by side, each panel a locked-off camera on a different angle: left panel front view, centre panel side profile, right panel back view. The camera is completely static in all three panels: no pan, no zoom, no dolly, no rotation, no cuts. The three panels never move, never resize, and never change their viewing angle. All three copies of the character perform one identical action in perfect unison, frame for frame, each seen from its own fixed angle: the character raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down. The character stays centred in its own panel and does not walk out of frame. Nothing is added to the scene.",
+        "model.resolution": "768P",
+        "model.duration": 5,
+        "seed": 11,
+        "control_after_generate": "fixed",
+        "watermark": false
+      },
+      "title": "2 - Animate all three panels at once"
+    },
+    {
+      "id": 21,
+      "type": "SaveVideo",
+      "pos": [
+        790,
+        410
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 6
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "fmm/motion",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "fmm/motion",
+        "format": "auto",
+        "format.codec": "auto"
+      },
+      "title": "Keep the clip"
+    },
+    {
+      "id": 22,
+      "type": "GetVideoComponents",
+      "pos": [
+        790,
+        690
+      ],
+      "size": [
+        280,
+        120
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            8,
+            12
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            13,
+            24
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "COMBO",
+          "type": "COMBO",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "COMBO",
+          "type": "COMBO",
+          "links": null,
+          "slot_index": 4
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoComponents"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "Clip to frames"
+    },
+    {
+      "id": 23,
+      "type": "ImageFromBatch",
+      "pos": [
+        790,
+        860
+      ],
+      "size": [
+        260,
+        90
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            10
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageFromBatch"
+      },
+      "widgets_values": [
+        0,
+        1
+      ],
+      "widgets_values_named": {
+        "batch_index": 0,
+        "length": 1
+      },
+      "title": "First frame"
+    },
+    {
+      "id": 30,
+      "type": "FMM_TriptychRegister",
+      "pos": [
+        1250,
+        40
+      ],
+      "size": [
+        330,
+        110
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "triptych",
+          "type": "IMAGE",
+          "link": 9
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE",
+          "link": 10
+        },
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "links": [
+            15
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_TriptychRegister"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "3 - Undo the model's reshaping"
+    },
+    {
+      "id": 31,
+      "type": "FMM_SampleKeyframes",
+      "pos": [
+        1250,
+        210
+      ],
+      "size": [
+        330,
+        150
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "frames",
+          "type": "IMAGE",
+          "link": 12
+        },
+        {
+          "name": "fps_in",
+          "type": "FLOAT",
+          "link": 13,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "keyframes",
+          "type": "IMAGE",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "timings",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_SampleKeyframes"
+      },
+      "widgets_values": [
+        16,
+        24.0,
+        false
+      ],
+      "widgets_values_named": {
+        "count": 16,
+        "fps": 24.0,
+        "loop": false
+      },
+      "title": "4 - Pick 16 keyframes"
+    },
+    {
+      "id": 32,
+      "type": "FMM_TriptychSplit",
+      "pos": [
+        1250,
+        420
+      ],
+      "size": [
+        330,
+        120
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "frames",
+          "type": "IMAGE",
+          "link": 14
+        },
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "view_a",
+          "type": "IMAGE",
+          "links": [
+            16,
+            20
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "view_b",
+          "type": "IMAGE",
+          "links": [
+            17,
+            21
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "view_c",
+          "type": "IMAGE",
+          "links": [
+            18,
+            22
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "names",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_TriptychSplit"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "5 - Cut the panels apart"
+    },
+    {
+      "id": 40,
+      "type": "FMM_KeyframeSheet",
+      "pos": [
+        1660,
+        40
+      ],
+      "size": [
+        330,
+        200
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "view_a",
+          "type": "IMAGE",
+          "link": 16
+        },
+        {
+          "name": "view_b",
+          "type": "IMAGE",
+          "link": 17
+        },
+        {
+          "name": "view_c",
+          "type": "IMAGE",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "sheet",
+          "type": "IMAGE",
+          "links": [
+            19,
+            23
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_KeyframeSheet"
+      },
+      "widgets_values": [
+        "front,side,back",
+        "",
+        256
+      ],
+      "widgets_values_named": {
+        "names": "front,side,back",
+        "timings": "",
+        "thumb": 256
+      },
+      "title": "6 - The contact sheet"
+    },
+    {
+      "id": 41,
+      "type": "SaveImage",
+      "pos": [
+        1660,
+        290
+      ],
+      "size": [
+        320,
+        300
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 19
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "fmm/keyframe_sheet"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "fmm/keyframe_sheet"
+      },
+      "title": "Save the sheet"
+    },
+    {
+      "id": 42,
+      "type": "FMM_SaveKeyframeManifest",
+      "pos": [
+        2040,
+        40
+      ],
+      "size": [
+        360,
+        320
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "view_a",
+          "type": "IMAGE",
+          "link": 20
+        },
+        {
+          "name": "view_b",
+          "type": "IMAGE",
+          "link": 21
+        },
+        {
+          "name": "view_c",
+          "type": "IMAGE",
+          "link": 22
+        },
+        {
+          "name": "sheet",
+          "type": "IMAGE",
+          "link": 23,
+          "shape": 7
+        },
+        {
+          "name": "fps_in",
+          "type": "FLOAT",
+          "link": 24,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "manifest_path",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "handoff_text",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_SaveKeyframeManifest"
+      },
+      "widgets_values": [
+        "front,side,back",
+        "",
+        "mascot",
+        "Raises both arms overhead, bends its knees, jumps once, lands and lowers its arms",
+        24.0,
+        false,
+        "from_mesh_to_motion"
+      ],
+      "widgets_values_named": {
+        "names": "front,side,back",
+        "timings": "",
+        "subject_name": "mascot",
+        "motion_description": "Raises both arms overhead, bends its knees, jumps once, lands and lowers its arms",
+        "fps": 24.0,
+        "loop": false,
+        "output_dir": "from_mesh_to_motion"
+      },
+      "title": "7 - keyframes.json + handoff.txt"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      0,
+      10,
+      1,
+      "IMAGE"
+    ],
+    [
+      3,
+      3,
+      0,
+      10,
+      2,
+      "IMAGE"
+    ],
+    [
+      4,
+      10,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      10,
+      0,
+      20,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      20,
+      0,
+      21,
+      0,
+      "VIDEO"
+    ],
+    [
+      7,
+      20,
+      0,
+      22,
+      0,
+      "VIDEO"
+    ],
+    [
+      8,
+      22,
+      0,
+      23,
+      0,
+      "IMAGE"
+    ],
+    [
+      9,
+      10,
+      0,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      10,
+      23,
+      0,
+      30,
+      1,
+      "IMAGE"
+    ],
+    [
+      11,
+      10,
+      1,
+      30,
+      2,
+      "FMM_LAYOUT"
+    ],
+    [
+      12,
+      22,
+      0,
+      31,
+      0,
+      "IMAGE"
+    ],
+    [
+      13,
+      22,
+      2,
+      31,
+      1,
+      "FLOAT"
+    ],
+    [
+      14,
+      31,
+      0,
+      32,
+      0,
+      "IMAGE"
+    ],
+    [
+      15,
+      30,
+      0,
+      32,
+      1,
+      "FMM_LAYOUT"
+    ],
+    [
+      16,
+      32,
+      0,
+      40,
+      0,
+      "IMAGE"
+    ],
+    [
+      17,
+      32,
+      1,
+      40,
+      1,
+      "IMAGE"
+    ],
+    [
+      18,
+      32,
+      2,
+      40,
+      2,
+      "IMAGE"
+    ],
+    [
+      19,
+      40,
+      0,
+      41,
+      0,
+      "IMAGE"
+    ],
+    [
+      20,
+      32,
+      0,
+      42,
+      0,
+      "IMAGE"
+    ],
+    [
+      21,
+      32,
+      1,
+      42,
+      1,
+      "IMAGE"
+    ],
+    [
+      22,
+      32,
+      2,
+      42,
+      2,
+      "IMAGE"
+    ],
+    [
+      23,
+      40,
+      0,
+      42,
+      3,
+      "IMAGE"
+    ],
+    [
+      24,
+      22,
+      2,
+      42,
+      4,
+      "FLOAT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Run outputs. The examples that the docs reference are force-added.
+out/
+!out/.gitkeep
+docs/report/assets/*.mp4

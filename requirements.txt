@@ -1,0 +1,12 @@
+# The pipeline itself needs very little: geometry, not models.
+Pillow>=10.0
+numpy>=1.24
+
+# Only for the ComfyUI nodes. ComfyUI already provides torch, so this is not
+# pinned here -- installing a second torch into a ComfyUI environment is the
+# fastest way to break it.
+# torch
+
+# Optional: frame extraction falls back to this when there is no system ffmpeg.
+# imageio>=2.31
+# imageio-ffmpeg>=0.4.9

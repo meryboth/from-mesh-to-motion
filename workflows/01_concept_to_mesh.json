@@ -1,0 +1,189 @@
+{
+  "id": "01_concept_to_mesh",
+  "revision": 0,
+  "last_node_id": 3,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        300,
+        314
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "concept_front.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "concept_front.png",
+        "upload": "image"
+      },
+      "title": "Character concept, front on, flat background"
+    },
+    {
+      "id": 2,
+      "type": "MeshyImageToModelNode",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        380,
+        380
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "MESHY_TASK_ID",
+          "type": "MESHY_TASK_ID",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "FILE_3D_GLB",
+          "type": "FILE_3D_GLB",
+          "links": [
+            2
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "FILE_3D_FBX",
+          "type": "FILE_3D_FBX",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MeshyImageToModelNode"
+      },
+      "widgets_values": [
+        "meshy-7",
+        "true",
+        "quad",
+        25000,
+        "on",
+        "true",
+        false,
+        "",
+        "2k",
+        "A-pose",
+        7,
+        false
+      ],
+      "widgets_values_named": {
+        "model": "meshy-7",
+        "should_remesh": "true",
+        "should_remesh.topology": "quad",
+        "should_remesh.target_polycount": 25000,
+        "symmetry_mode": "on",
+        "should_texture": "true",
+        "should_texture.enable_pbr": false,
+        "should_texture.texture_prompt": "",
+        "should_texture.texture_resolution": "2k",
+        "pose_mode": "A-pose",
+        "seed": 7,
+        "ultra_mode": false
+      },
+      "title": "Image to mesh, held in A-pose for rigging"
+    },
+    {
+      "id": 3,
+      "type": "SaveGLB",
+      "pos": [
+        830,
+        40
+      ],
+      "size": [
+        320,
+        90
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mesh",
+          "type": "FILE_3D_GLB",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveGLB"
+      },
+      "widgets_values": [
+        "fmm/character"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "fmm/character"
+      },
+      "title": "The mesh Blender renders and Astra rigs"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      2,
+      3,
+      0,
+      "FILE_3D_GLB"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

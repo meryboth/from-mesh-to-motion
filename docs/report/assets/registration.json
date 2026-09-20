@@ -1,0 +1,14 @@
+{
+  "rescaled": {
+    "naive_mae": 0.28,
+    "registered_mae": 0.85
+  },
+  "letterboxed": {
+    "naive_mae": 18.35,
+    "registered_mae": 0.89
+  },
+  "cropped": {
+    "naive_mae": 20.19,
+    "registered_mae": 0.54
+  }
+}
