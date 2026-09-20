@@ -19,6 +19,7 @@ import subprocess
 import sys
 
 from . import manifest as manifest_mod
+from . import repair as repair_mod
 from . import sheet as sheet_mod
 from . import video as video_mod
 
@@ -187,6 +188,69 @@ def cmd_keyframes(args) -> None:
     print("handoff  -> " + handoff)
 
 
+# --------------------------------------------------------------------- qa
+
+
+def cmd_qa(args) -> None:
+    """Score a finished sheet for identity drift, per view and per keyframe."""
+    from PIL import Image
+
+    layout = sheet_mod.load_layout(args.triptych)
+    bg = tuple(layout.background)
+    views = [p.view for p in layout.panels]
+    views_dir = os.path.join(args.run, "views")
+
+    # The palette comes from k00 of this very clip, not from the Blender anchor:
+    # k00 has been through the same encoder as every other frame, so anything it
+    # shares with them is codec, not drift.
+    rows, report = [], {"views": {}}
+    for view in views:
+        k0 = os.path.join(views_dir, "k00_" + view + ".png")
+        if not os.path.exists(k0):
+            raise SystemExit("Missing " + k0 + " -- run `keyframes` first.")
+        palette = repair_mod.anchor_palette(Image.open(k0), bg, colors=args.colors)
+
+        per_view = []
+        for i in range(args.n):
+            path = os.path.join(views_dir, "k" + str(i).zfill(2) + "_" + view + ".png")
+            if not os.path.exists(path):
+                break
+            repaired = None
+            if args.repaired:
+                cand = os.path.join(args.repaired, "k" + str(i).zfill(2) + "_" + view + ".png")
+                if os.path.exists(cand):
+                    repaired = Image.open(cand)
+            row = repair_mod.assess_panel(Image.open(path), palette, bg, repaired)
+            row.update(index=i, view=view)
+            per_view.append(row)
+        rows.extend(per_view)
+        report["views"][view] = repair_mod.summarise(per_view)
+
+    report["overall"] = repair_mod.summarise(rows)
+    report["gate"] = repair_mod.gate(report["overall"], drift_ceiling=args.ceiling)
+
+    print("identity drift  (0.01 codec noise | 0.03 visible tint | 0.07 changed character)")
+    for view in views:
+        v = report["views"][view]
+        line = ("  " + view.ljust(6) + " mean " + format(v["drift_mean"], ".4f")
+                + "   max " + format(v["drift_max"], ".4f"))
+        if v.get("drift_mean_repaired") is not None:
+            line += ("   repaired " + format(v["drift_mean_repaired"], ".4f")
+                     + "   pose IoU min " + format(v["pose_iou_min"], ".3f"))
+        print(line)
+
+    print("")
+    print("PASS" if report["gate"]["pass"] else "FAIL")
+    for note in report["gate"]["notes"]:
+        print("  - " + note)
+
+    out = os.path.join(args.run, "qa.json")
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump({"report": report, "rows": rows}, fh, indent=2)
+    print("")
+    print("report -> " + out)
+
+
 # ------------------------------------------------------------------- main
 
 
@@ -230,6 +294,16 @@ def build_parser() -> argparse.ArgumentParser:
     k.add_argument("--no-register", action="store_true",
                    help="Skip first-frame registration and stretch to fit instead")
     k.set_defaults(func=cmd_keyframes)
+
+    q = sub.add_parser("qa", help="Score a finished sheet for identity drift")
+    q.add_argument("--run", default="out/05_keyframes")
+    q.add_argument("--triptych", required=True)
+    q.add_argument("-n", type=int, default=16)
+    q.add_argument("--colors", type=int, default=6)
+    q.add_argument("--ceiling", type=float, default=0.03)
+    q.add_argument("--repaired", default=None,
+                   help="Directory of repaired panels to compare against")
+    q.set_defaults(func=cmd_qa)
 
     return p
 

@@ -104,21 +104,19 @@ footer{border-top:1px solid var(--line); margin-top:72px; padding:32px 0 72px;
 <h2>The problem</h2>
 <p class="sub">Three views of one pose have to agree, and generated views don't.</p>
 
-<p>Thomas Guilcher <a href="https://x.com/thomas_guilcher/status/2101390478688079969">described a
-way to animate a 3D mesh without keyframing it</a>: rig the mesh, ask an image model for sixteen
-keyframes in three orthographic views, then hand those keyframes back to the rigging tool as
-explicit pose references. The rigging tool stops inferring motion from a sentence and reads it off
-pictures. The posted result is a bunny that moves convincingly, with no manual keyframing.</p>
+<p>An auto-rigger does not have to infer motion from a sentence. Give it a rigged mesh and a sheet
+of keyframes drawn in orthographic views, and it can read the poses off the pictures instead —
+which is both more controllable and far less work than keyframing by hand.</p>
 
-<p>The middle step is the tedious one, and it is where the method strains. Asking an image model
-for <em>front</em>, then <em>side</em>, then <em>back</em> is three independent requests. They come
-back as three drawings of three slightly different characters standing in three slightly different
-poses. Multiply by sixteen keyframes and the rigging tool is handed a contradiction: the front view
-says the arm is at shoulder height, the side view says it is lower, and the back view has quietly
-changed the character's proportions.</p>
+<p>Producing that sheet is the hard part. Asking an image model for <em>front</em>, then
+<em>side</em>, then <em>back</em> is three independent requests. They come back as three drawings
+of three slightly different characters standing in three slightly different poses. Multiply by
+sixteen keyframes and the rigger is handed a contradiction: the front view says the arm is at
+shoulder height, the side view says it is lower, and the back view has quietly changed the
+character's proportions.</p>
 
-<p>This project automates that middle step and removes the contradiction. The rig and the final
-animation stay where they were — Astra, Meshy, or a person.</p>
+<p>This project produces that sheet without the contradiction. The rig and the final animation stay
+where they were — Astra, Meshy, or a person.</p>
 
 <h2>The method</h2>
 <p class="sub">Six stages; the generative one is deliberately the smallest.</p>
@@ -234,10 +232,12 @@ panels against the source anchors, per 255. Regenerate with
 <h2>What doesn't work</h2>
 <p class="sub">Measured on the demo runs, not guessed.</p>
 
-<h3>The side panel degrades first</h3>
-<p>Front and back hold their shape for the whole clip. The profile is the panel that loses limb
-detail and drifts in angle, and it does so earlier the more the motion asks for. On a gentle
-arms-overhead motion it stays usable; on a full crouch-and-jump it tumbles.</p>
+<h3>The side panel loses its <em>shape</em> first</h3>
+<p>On a gentle arms-overhead motion the profile stays usable; on a full crouch-and-jump it rotates
+out of profile and stops being a side view at all. This is a geometry failure, not a colour one —
+by the identity metric the side panel is the <em>best</em> behaved of the three (mean 0.008 against
+0.014 for the front). Colour holding while the shape goes is exactly why the sheet needs a human
+glance and not only a number.</p>
 
 <figure>
   <img src="assets/side-drift.gif" alt="A jump animation where the centre panel rotates out of profile">
@@ -261,10 +261,51 @@ The layout instructions are load-bearing but they crowd out the motion when they
 <p>Five seconds at sixteen keyframes is a single beat. Longer motions want several runs stitched on
 shared end poses, which this repository does not do.</p>
 
-<h3>Identity drifts slowly</h3>
-<p>Over sixteen keyframes the colour and proportions hold well enough to rig from. Over a much
-longer clip they would not. A Qwen-Image-Edit repair pass against the rest-pose anchor is the
-obvious next step and is <em>not</em> implemented here.</p>
+<h3>Identity does not drift — and the repair pass makes it worse</h3>
+<p>This one was written down backwards first, so the correction is worth the space.</p>
+
+<p>The limitation originally claimed here was that identity drifts slowly over the clip, and that a
+Qwen-Image-Edit repair pass against the rest-pose anchor was the obvious next step. Measuring it
+said otherwise, twice over.</p>
+
+<p><strong>The first metric was wrong.</strong> Comparing a posed panel's colour histogram to the
+rest pose looks reasonable and is not: raising the character's arms exposes more body and less
+backpack, which moves the histogram hard without anything about the character having changed. That
+metric shifted by <strong>0.298</strong> on the back panel from pose alone — bigger than any real
+drift in the run, and it fingered the wrong panel. What replaced it reduces the rest pose to a few
+dominant colours and measures how far each of those colours has <em>moved</em>, weighted by how
+much of it the anchor contained. Weighting by the anchor rather than the panel is the whole trick:
+a raised arm changes how much teal is visible, not what teal looks like. Pose leak drops to
+<strong>0.006–0.016</strong>, while an 8/255 red tint still reads three times baseline.</p>
+
+<p><strong>Measured properly, there is almost nothing to repair.</strong> Across sixteen keyframes
+and three views, drift runs 0.008–0.021 — below the level of a tint you would have to look for.
+Only one panel in the harder jump run crossed the 0.03 gate, at 0.039.</p>
+
+<p><strong>The repair pass was run on that panel anyway, and it failed hard.</strong> Drift went
+from 0.039 to <strong>0.195</strong>, five times worse, and silhouette IoU against the input fell
+to <strong>0.41</strong> — the edit model re-posed the character. It also recoloured the orange
+backpack brown, added a weathered surface texture that was never there, and stripped the backpack
+off the reference panel it had been told to leave untouched.</p>
+
+<figure>
+  <img src="assets/repair-failed.jpg" alt="Three panels: rest pose, the drifted keyframe, and a repair that changed the colours and the pose">
+  <figcaption>Left is the colour reference the model was told not to touch; it lost its backpack
+  anyway. Right is the repair: browner, grubbier and in a different pose than the panel it was
+  meant to be correcting.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>What shipped instead</strong>
+  <p>The repair pass is not in the pipeline. The <em>measurement</em> is:
+  <code>python -m pipeline qa</code> scores a finished sheet per view and per keyframe and gates it
+  on drift, and the silhouette-IoU guard is what caught the failure above. A gate that says "this
+  sheet is fine, rig from it" is worth more than a repair that has to be watched.</p>
+  <p>This is one template, one prompt and one panel, so it is evidence against <em>this</em> repair,
+  not proof that none can work. A pass wired with a true second reference image, or restricted to
+  the subject mask at low denoise, is still worth trying — but it has to beat the gate to earn a
+  place.</p>
+</div>
 
 <div class="callout warn">
   <strong>One claim deliberately not made</strong>

@@ -20,16 +20,14 @@ modes, and the numbers behind the consistency claims.
 
 ## What it does
 
-[Thomas Guilcher showed a way to animate a 3D mesh without keyframing it by hand](https://x.com/thomas_guilcher/status/2101390478688079969):
-rig the mesh, ask an image model for 16 keyframes in three orthographic views, then hand those
-keyframes back to the rigging tool as explicit pose references. The rigging tool stops guessing the
-motion from a text prompt and reads it off pictures instead.
+An auto-rigger does not have to infer motion from a sentence. Give it a rigged mesh and a sheet of
+keyframes drawn in orthographic views, and it reads the poses off the pictures instead.
 
-The middle step is the tedious one and the one that goes wrong. Asking an image model for
-`front`, then `side`, then `back` produces three drawings of three slightly different characters in
-three slightly different poses — and by keyframe 12 the drift is not subtle. **This repository
-automates that middle step and fixes the drift**, leaving the rig and the final animation to Astra,
-Meshy, or a human.
+Producing that sheet is the hard part. Asking an image model for `front`, then `side`, then `back`
+is three independent requests, and they come back as three drawings of three slightly different
+characters in three slightly different poses — by keyframe 12 the drift is not subtle. **This
+repository produces the sheet without that contradiction**, leaving the rig and the final animation
+to Astra, Meshy, or a human.
 
 | Stage | What happens | Where |
 |---|---|---|
@@ -176,16 +174,20 @@ config/job.example.json     subject + motion description
 
 Measured on the demo run, not guessed:
 
-- **The side panel is the weak one.** Front and back read cleanly; the profile loses limb detail
-  first and drifts in angle before the others do. It is still the panel most worth checking by hand.
+- **The side panel loses its shape first.** On a gentle motion the profile holds; on a
+  crouch-and-jump it rotates out of profile entirely. This is geometry, not colour — by the identity
+  metric the side panel is the *best* behaved of the three.
 - **Big translations get resisted.** The model reliably moves limbs and reluctantly moves the whole
   body — an early "jump" prompt produced arms going up with the feet planted. Writing the action
   first, before the layout constraints, helps.
 - **Five seconds is the practical clip length**, which at 16 keyframes is one motion beat. Longer
   motions want several runs stitched on shared end poses.
-- **Identity drifts slowly, not suddenly.** Over 16 keyframes the colour and proportions hold; over
-  a much longer clip they would not. A Qwen-Image-Edit repair pass against the rest-pose anchor is
-  the obvious next step and is *not* implemented here.
+- **Identity does not measurably drift, and the repair pass made it worse.** Drift runs 0.008–0.021
+  across the sheet, below a tint you would notice. Run on the single panel that crossed the gate
+  (0.039), a Qwen-Image-Edit repair pass took it to 0.195 and dropped pose IoU to 0.41 — it re-posed
+  the character, recoloured the backpack and altered the reference panel it was told to leave alone.
+  What ships is the measurement, not the repair: `python -m pipeline qa` gates a sheet on drift and
+  on silhouette IoU. See the write-up for the metric that had to be thrown away first.
 - **The anchors come from Blender, not ComfyUI.** ComfyUI's `Render Mesh` plus `Create Camera Info`
   looks like it could replace that pass, but the orthographic flag is documented for `Render Splat`
   and was not verified for meshes, so the claim is not made.
