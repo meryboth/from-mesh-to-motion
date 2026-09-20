@@ -2,7 +2,7 @@
   "id": "02_triptych_to_keyframes",
   "revision": 0,
   "last_node_id": 42,
-  "last_link_id": 24,
+  "last_link_id": 27,
   "nodes": [
     {
       "id": 1,
@@ -24,7 +24,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            1
+            2
           ],
           "slot_index": 0
         },
@@ -68,7 +68,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            2
+            3
           ],
           "slot_index": 0
         },
@@ -112,7 +112,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            3
+            4
           ],
           "slot_index": 0
         },
@@ -137,6 +137,65 @@
       "title": "Ortho anchor - back"
     },
     {
+      "id": 5,
+      "type": "FMM_MotionPrompt",
+      "pos": [
+        400,
+        620
+      ],
+      "size": [
+        360,
+        260
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "link": 1,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "summary",
+          "type": "STRING",
+          "links": [
+            27
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_MotionPrompt"
+      },
+      "widgets_values": [
+        "raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down",
+        "clay toy character",
+        false,
+        "front,side,back",
+        ""
+      ],
+      "widgets_values_named": {
+        "action": "raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down",
+        "subject": "clay toy character",
+        "loop": false,
+        "view_names": "front,side,back",
+        "extra": ""
+      },
+      "title": "Write only the action here"
+    },
+    {
       "id": 10,
       "type": "FMM_TriptychCompose",
       "pos": [
@@ -148,23 +207,23 @@
         200
       ],
       "flags": {},
-      "order": 3,
+      "order": 4,
       "mode": 0,
       "inputs": [
         {
           "name": "view_a",
           "type": "IMAGE",
-          "link": 1
+          "link": 2
         },
         {
           "name": "view_b",
           "type": "IMAGE",
-          "link": 2
+          "link": 3
         },
         {
           "name": "view_c",
           "type": "IMAGE",
-          "link": 3
+          "link": 4
         }
       ],
       "outputs": [
@@ -172,9 +231,9 @@
           "name": "triptych",
           "type": "IMAGE",
           "links": [
-            4,
             5,
-            9
+            6,
+            11
           ],
           "slot_index": 0
         },
@@ -182,7 +241,8 @@
           "name": "layout",
           "type": "FMM_LAYOUT",
           "links": [
-            11
+            1,
+            13
           ],
           "slot_index": 1
         }
@@ -220,13 +280,13 @@
         270
       ],
       "flags": {},
-      "order": 4,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 4
+          "link": 5
         }
       ],
       "outputs": [],
@@ -253,13 +313,21 @@
         330
       ],
       "flags": {},
-      "order": 5,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
           "name": "first_frame",
           "type": "IMAGE",
-          "link": 5
+          "link": 6
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "model.prompt"
+          },
+          "link": 7
         }
       ],
       "outputs": [
@@ -267,8 +335,8 @@
           "name": "VIDEO",
           "type": "VIDEO",
           "links": [
-            6,
-            7
+            8,
+            9
           ],
           "slot_index": 0
         }
@@ -308,13 +376,13 @@
         240
       ],
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
           "name": "video",
           "type": "VIDEO",
-          "link": 6
+          "link": 8
         }
       ],
       "outputs": [],
@@ -345,13 +413,13 @@
         120
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "video",
           "type": "VIDEO",
-          "link": 7
+          "link": 9
         }
       ],
       "outputs": [
@@ -359,8 +427,8 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            8,
-            12
+            10,
+            14
           ],
           "slot_index": 0
         },
@@ -374,8 +442,8 @@
           "name": "FLOAT",
           "type": "FLOAT",
           "links": [
-            13,
-            24
+            15,
+            26
           ],
           "slot_index": 2
         },
@@ -411,13 +479,13 @@
         90
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 8
+          "link": 10
         }
       ],
       "outputs": [
@@ -425,7 +493,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            10
+            12
           ],
           "slot_index": 0
         }
@@ -455,23 +523,23 @@
         110
       ],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "triptych",
           "type": "IMAGE",
-          "link": 9
+          "link": 11
         },
         {
           "name": "first_frame",
           "type": "IMAGE",
-          "link": 10
+          "link": 12
         },
         {
           "name": "layout",
           "type": "FMM_LAYOUT",
-          "link": 11
+          "link": 13
         }
       ],
       "outputs": [
@@ -479,7 +547,7 @@
           "name": "layout",
           "type": "FMM_LAYOUT",
           "links": [
-            15
+            17
           ],
           "slot_index": 0
         },
@@ -509,18 +577,18 @@
         150
       ],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
           "name": "frames",
           "type": "IMAGE",
-          "link": 12
+          "link": 14
         },
         {
           "name": "fps_in",
           "type": "FLOAT",
-          "link": 13,
+          "link": 15,
           "shape": 7
         }
       ],
@@ -529,7 +597,7 @@
           "name": "keyframes",
           "type": "IMAGE",
           "links": [
-            14
+            16
           ],
           "slot_index": 0
         },
@@ -567,18 +635,18 @@
         120
       ],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "frames",
           "type": "IMAGE",
-          "link": 14
+          "link": 16
         },
         {
           "name": "layout",
           "type": "FMM_LAYOUT",
-          "link": 15
+          "link": 17
         }
       ],
       "outputs": [
@@ -586,8 +654,8 @@
           "name": "view_a",
           "type": "IMAGE",
           "links": [
-            16,
-            20
+            18,
+            22
           ],
           "slot_index": 0
         },
@@ -595,8 +663,8 @@
           "name": "view_b",
           "type": "IMAGE",
           "links": [
-            17,
-            21
+            19,
+            23
           ],
           "slot_index": 1
         },
@@ -604,8 +672,8 @@
           "name": "view_c",
           "type": "IMAGE",
           "links": [
-            18,
-            22
+            20,
+            24
           ],
           "slot_index": 2
         },
@@ -635,23 +703,23 @@
         200
       ],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
           "name": "view_a",
           "type": "IMAGE",
-          "link": 16
+          "link": 18
         },
         {
           "name": "view_b",
           "type": "IMAGE",
-          "link": 17
+          "link": 19
         },
         {
           "name": "view_c",
           "type": "IMAGE",
-          "link": 18
+          "link": 20
         }
       ],
       "outputs": [
@@ -659,8 +727,8 @@
           "name": "sheet",
           "type": "IMAGE",
           "links": [
-            19,
-            23
+            21,
+            25
           ],
           "slot_index": 0
         }
@@ -692,13 +760,13 @@
         300
       ],
       "flags": {},
-      "order": 13,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 19
+          "link": 21
         }
       ],
       "outputs": [],
@@ -725,35 +793,43 @@
         320
       ],
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
           "name": "view_a",
           "type": "IMAGE",
-          "link": 20
+          "link": 22
         },
         {
           "name": "view_b",
           "type": "IMAGE",
-          "link": 21
+          "link": 23
         },
         {
           "name": "view_c",
           "type": "IMAGE",
-          "link": 22
+          "link": 24
         },
         {
           "name": "sheet",
           "type": "IMAGE",
-          "link": 23,
+          "link": 25,
           "shape": 7
         },
         {
           "name": "fps_in",
           "type": "FLOAT",
-          "link": 24,
+          "link": 26,
           "shape": 7
+        },
+        {
+          "name": "motion_description",
+          "type": "STRING",
+          "widget": {
+            "name": "motion_description"
+          },
+          "link": 27
         }
       ],
       "outputs": [
@@ -797,6 +873,14 @@
   "links": [
     [
       1,
+      10,
+      1,
+      5,
+      0,
+      "FMM_LAYOUT"
+    ],
+    [
+      2,
       1,
       0,
       10,
@@ -804,23 +888,23 @@
       "IMAGE"
     ],
     [
-      2,
+      3,
       2,
       0,
       10,
       1,
-      "IMAGE"
-    ],
-    [
-      3,
-      3,
-      0,
-      10,
-      2,
       "IMAGE"
     ],
     [
       4,
+      3,
+      0,
+      10,
+      2,
+      "IMAGE"
+    ],
+    [
+      5,
       10,
       0,
       11,
@@ -828,7 +912,7 @@
       "IMAGE"
     ],
     [
-      5,
+      6,
       10,
       0,
       20,
@@ -836,7 +920,15 @@
       "IMAGE"
     ],
     [
-      6,
+      7,
+      5,
+      0,
+      20,
+      1,
+      "STRING"
+    ],
+    [
+      8,
       20,
       0,
       21,
@@ -844,7 +936,7 @@
       "VIDEO"
     ],
     [
-      7,
+      9,
       20,
       0,
       22,
@@ -852,7 +944,7 @@
       "VIDEO"
     ],
     [
-      8,
+      10,
       22,
       0,
       23,
@@ -860,7 +952,7 @@
       "IMAGE"
     ],
     [
-      9,
+      11,
       10,
       0,
       30,
@@ -868,7 +960,7 @@
       "IMAGE"
     ],
     [
-      10,
+      12,
       23,
       0,
       30,
@@ -876,7 +968,7 @@
       "IMAGE"
     ],
     [
-      11,
+      13,
       10,
       1,
       30,
@@ -884,7 +976,7 @@
       "FMM_LAYOUT"
     ],
     [
-      12,
+      14,
       22,
       0,
       31,
@@ -892,7 +984,7 @@
       "IMAGE"
     ],
     [
-      13,
+      15,
       22,
       2,
       31,
@@ -900,7 +992,7 @@
       "FLOAT"
     ],
     [
-      14,
+      16,
       31,
       0,
       32,
@@ -908,7 +1000,7 @@
       "IMAGE"
     ],
     [
-      15,
+      17,
       30,
       0,
       32,
@@ -916,31 +1008,31 @@
       "FMM_LAYOUT"
     ],
     [
-      16,
-      32,
-      0,
-      40,
-      0,
-      "IMAGE"
-    ],
-    [
-      17,
-      32,
-      1,
-      40,
-      1,
-      "IMAGE"
-    ],
-    [
       18,
       32,
-      2,
+      0,
       40,
-      2,
+      0,
       "IMAGE"
     ],
     [
       19,
+      32,
+      1,
+      40,
+      1,
+      "IMAGE"
+    ],
+    [
+      20,
+      32,
+      2,
+      40,
+      2,
+      "IMAGE"
+    ],
+    [
+      21,
       40,
       0,
       41,
@@ -948,31 +1040,31 @@
       "IMAGE"
     ],
     [
-      20,
-      32,
-      0,
-      42,
-      0,
-      "IMAGE"
-    ],
-    [
-      21,
-      32,
-      1,
-      42,
-      1,
-      "IMAGE"
-    ],
-    [
       22,
       32,
-      2,
+      0,
       42,
-      2,
+      0,
       "IMAGE"
     ],
     [
       23,
+      32,
+      1,
+      42,
+      1,
+      "IMAGE"
+    ],
+    [
+      24,
+      32,
+      2,
+      42,
+      2,
+      "IMAGE"
+    ],
+    [
+      25,
       40,
       0,
       42,
@@ -980,12 +1072,20 @@
       "IMAGE"
     ],
     [
-      24,
+      26,
       22,
       2,
       42,
       4,
       "FLOAT"
+    ],
+    [
+      27,
+      5,
+      1,
+      42,
+      5,
+      "STRING"
     ]
   ],
   "groups": [],

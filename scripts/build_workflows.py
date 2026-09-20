@@ -41,7 +41,8 @@ class Node:
     """One graph node: its class, its widget values, and its wired inputs."""
 
     def __init__(self, nid, class_type, pos, widgets=None, links=None,
-                 outputs=None, title=None, size=(340, 120), optional=()):
+                 outputs=None, title=None, size=(340, 120), optional=(),
+                 widget_links=None):
         self.id = nid
         self.class_type = class_type
         self.pos = list(pos)
@@ -59,6 +60,10 @@ class Node:
         # Input names the node class declares as optional. ComfyUI marks these
         # with shape 7 so the editor draws them as an optional socket.
         self.optional = set(optional)
+        # Links that drive a WIDGET instead of a socket. ComfyUI marks these with
+        # a "widget" key on the input and lists them AFTER the real sockets, so
+        # they are kept separate to preserve that ordering.
+        self.widget_links = dict(widget_links or {})
 
 
 def build_save_format(nodes, title):
@@ -71,21 +76,27 @@ def build_save_format(nodes, title):
     out_links = {n.id: {i: [] for i in range(len(n.outputs))} for n in nodes}
 
     for node in nodes:
-        for input_name, (src_id, src_slot, ltype) in node.links.items():
+        ordered = list(node.links) + list(node.widget_links)
+        for input_name in ordered:
+            store = node.links if input_name in node.links else node.widget_links
+            src_id, src_slot, ltype = store[input_name][:3]
             link_id += 1
-            target_slot = list(node.links).index(input_name)
+            target_slot = ordered.index(input_name)
             links.append([link_id, src_id, src_slot, node.id, target_slot, ltype])
             out_links[src_id][src_slot].append(link_id)
-            node.links[input_name] = (src_id, src_slot, ltype, link_id)
+            store[input_name] = (src_id, src_slot, ltype, link_id)
 
     graph_nodes = []
     for order, node in enumerate(nodes):
         inputs = []
-        for slot, (name, (src_id, src_slot, ltype, lid)) in enumerate(node.links.items()):
+        for name, (src_id, src_slot, ltype, lid) in node.links.items():
             entry_in = {"name": name, "type": ltype, "link": lid}
             if name in node.optional:
                 entry_in["shape"] = 7
             inputs.append(entry_in)
+        for name, (src_id, src_slot, ltype, lid) in node.widget_links.items():
+            inputs.append({"name": name, "type": ltype,
+                           "widget": {"name": name}, "link": lid})
         outputs = []
         for slot, (name, otype) in enumerate(node.outputs):
             outputs.append({
@@ -133,7 +144,7 @@ def build_api_format(nodes):
     for node in nodes:
         inputs = {name: value for name, value in node.widgets
                   if not name.startswith("~")}
-        for name, link in node.links.items():
+        for name, link in list(node.links.items()) + list(node.widget_links.items()):
             inputs[name] = [str(link[0]), link[1]]
         api[str(node.id)] = {"class_type": node.class_type, "inputs": inputs}
     return api
@@ -154,6 +165,24 @@ def triptych_to_keyframes():
             title="Ortho anchor - " + view,
             size=(300, 314),
         ))
+
+    n.append(Node(
+        5, "FMM_MotionPrompt", (400, 620),
+        widgets=[
+            ("action", "raises both arms straight overhead, bends its knees, "
+                       "springs up into a single jump, lands, and lowers its arms "
+                       "back down"),
+            ("subject", "clay toy character"),
+            ("loop", False),
+            ("view_names", "front,side,back"),
+            ("extra", ""),
+        ],
+        links={"layout": (10, 1, "FMM_LAYOUT")},
+        optional=("layout",),
+        outputs=[("prompt", "STRING"), ("summary", "STRING")],
+        title="Write only the action here",
+        size=(360, 260),
+    ))
 
     n.append(Node(
         10, "FMM_TriptychCompose", (400, 40),
@@ -186,6 +215,8 @@ def triptych_to_keyframes():
         20, "MinimaxHailuo03FirstLastFrameNode", (790, 40),
         widgets=[
             ("model", "MiniMax H3"),
+            # Driven by the Motion Prompt node; the value is kept so the graph
+            # still reads sensibly if that link is ever removed.
             ("model.prompt", MOTION_PROMPT),
             ("model.resolution", "768P"),
             ("model.duration", 5),
@@ -194,6 +225,7 @@ def triptych_to_keyframes():
             ("watermark", False),
         ],
         links={"first_frame": (10, 0, "IMAGE")},
+        widget_links={"model.prompt": (5, 0, "STRING")},
         outputs=[("VIDEO", "VIDEO")],
         title="2 - Animate all three panels at once",
         size=(420, 330),
@@ -296,6 +328,7 @@ def triptych_to_keyframes():
             "sheet": (40, 0, "IMAGE"),
             "fps_in": (22, 2, "FLOAT"),
         },
+        widget_links={"motion_description": (5, 1, "STRING")},
         optional=("sheet", "fps_in"),
         outputs=[("manifest_path", "STRING"), ("handoff_text", "STRING")],
         title="7 - keyframes.json + handoff.txt",

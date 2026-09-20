@@ -1,12 +1,13 @@
 {
   "subject": {
     "name": "Mascot",
-    "description": "Stylized clay toy creature, one eye, two antennae, orange backpack",
+    "kind": "clay toy character",
     "mesh": "out/01_mesh/mascot.glb",
     "license": "CC0 - generated for this repo"
   },
   "motion": {
-    "description": "Raises both arms overhead, bends its knees, jumps once, lands and lowers its arms",
+    "action": "raises both arms straight overhead, holds for a moment, then lowers them back down",
+    "extra": "",
     "fps": 24,
     "duration_s": 5,
     "loop": false

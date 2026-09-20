@@ -382,6 +382,31 @@ off the reference panel it had been told to leave untouched.</p>
   verified for meshes here. Blender stays the canonical anchor renderer until someone checks.</p>
 </div>
 
+<h2>Where you say what the animation is</h2>
+<p class="sub">One field, and the 130 words that are not yours to edit.</p>
+
+<p>The prompt the video model needs runs to about 140 words, of which roughly twenty describe the
+animation. The other hundred and twenty lock the panels down — static camera, no zoom, panels that
+never move or change angle, every copy in unison — and they are the reason the three views agree
+at all.</p>
+
+<p>Leaving that to be hand-edited is a trap. Break the scaffolding and nothing errors; the sheet
+comes back with panels that quietly disagree, which is precisely the failure the pipeline exists to
+prevent. So the scaffolding is generated and the user writes one field:</p>
+
+<pre><code>"action": "raises its right arm and waves twice, then lowers it"</code></pre>
+
+<p>Two details in that template are load-bearing and were arrived at by running it. <strong>The
+action goes first</strong> — with the constraints ahead of it, the crouch-and-jump prompt produced
+arms overhead and feet that never left the ground. And the <strong>background is described from the
+triptych's own layout</strong> rather than typed, so the prompt cannot call a grey canvas white;
+a model that repaints the background breaks the content-box detection the split step depends on.</p>
+
+<p>The same node emits the short summary that lands in <code>keyframes.json</code> and the handoff
+text, so a sheet cannot claim one motion in its provenance and show another in its frames. The CLI
+half prints the identical string — <code>python -m pipeline prompt</code> — because both call one
+builder.</p>
+
 <h2>The handoff</h2>
 <p class="sub">A folder of PNGs is not a deliverable.</p>
 

@@ -17,6 +17,20 @@
       "image": "beauty_back.png"
     }
   },
+  "5": {
+    "class_type": "FMM_MotionPrompt",
+    "inputs": {
+      "action": "raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down",
+      "subject": "clay toy character",
+      "loop": false,
+      "view_names": "front,side,back",
+      "extra": "",
+      "layout": [
+        "10",
+        1
+      ]
+    }
+  },
   "10": {
     "class_type": "FMM_TriptychCompose",
     "inputs": {
@@ -54,7 +68,10 @@
     "class_type": "MinimaxHailuo03FirstLastFrameNode",
     "inputs": {
       "model": "MiniMax H3",
-      "model.prompt": "A three-panel split-screen character turnaround sheet on a flat light grey background. The same clay toy character is shown three times side by side, each panel a locked-off camera on a different angle: left panel front view, centre panel side profile, right panel back view. The camera is completely static in all three panels: no pan, no zoom, no dolly, no rotation, no cuts. The three panels never move, never resize, and never change their viewing angle. All three copies of the character perform one identical action in perfect unison, frame for frame, each seen from its own fixed angle: the character raises both arms straight overhead, bends its knees, springs up into a single jump, lands, and lowers its arms back down. The character stays centred in its own panel and does not walk out of frame. Nothing is added to the scene.",
+      "model.prompt": [
+        "5",
+        0
+      ],
       "model.resolution": "768P",
       "model.duration": 5,
       "seed": 11,
@@ -179,7 +196,10 @@
       "names": "front,side,back",
       "timings": "",
       "subject_name": "mascot",
-      "motion_description": "Raises both arms overhead, bends its knees, jumps once, lands and lowers its arms",
+      "motion_description": [
+        "5",
+        1
+      ],
       "fps": 24.0,
       "loop": false,
       "output_dir": "from_mesh_to_motion",

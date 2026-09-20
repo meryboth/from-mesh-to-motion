@@ -1,7 +1,8 @@
 """ComfyUI nodes for the mesh -> keyframe-sheet pipeline.
 
-Six nodes, in the order a graph uses them:
+Seven nodes, in the order a graph uses them:
 
+  MotionPrompt      the action alone   -> the full, panel-locking video prompt
   TriptychCompose   three ortho views  -> one canvas + its layout
   TriptychRegister  canvas + frame 0   -> the layout corrected for what came back
   SampleKeyframes   video frames       -> N evenly spaced stills
@@ -23,6 +24,7 @@ import torch
 from PIL import Image
 
 from ..pipeline import manifest as manifest_mod
+from ..pipeline import prompt as prompt_mod
 from ..pipeline import sheet as sheet_mod
 from ..pipeline import video as video_mod
 
@@ -61,6 +63,77 @@ def parse_color(text: str, fallback=(228, 228, 230)) -> tuple:
     if len(parts) == 3:
         return tuple(max(0, min(255, int(float(p)))) for p in parts)
     return fallback
+
+
+# --------------------------------------------------------- 0. motion prompt
+
+
+class MotionPrompt:
+    """Write only the action; this builds the rest of the video prompt.
+
+    The prompt the video model needs is ~140 words, of which ~20 describe the
+    animation. The other 120 lock the panels down, and they are the reason the
+    three views stay in agreement. Hand-editing one sentence out of the middle of
+    that block is a trap: break the scaffolding and nothing errors, the sheet just
+    comes back with panels that quietly disagree.
+
+    Wire `layout` in and the view names and background description are taken from
+    the triptych that was actually built, so the prompt cannot drift away from the
+    image it describes.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "action": ("STRING", {
+                    "multiline": True,
+                    "default": "raises both arms straight overhead, holds for a "
+                               "moment, then lowers them back down",
+                    "tooltip": "Only what the character does. No camera or layout "
+                               "instructions -- those are added for you, in the "
+                               "order that was measured to work.",
+                }),
+                "subject": ("STRING", {
+                    "default": "clay toy character",
+                    "tooltip": "How to refer to the character, e.g. 'clay toy "
+                               "character', 'four-legged creature'.",
+                }),
+                "loop": ("BOOLEAN", {"default": False}),
+            },
+            "optional": {
+                "layout": ("FMM_LAYOUT",),
+                "view_names": ("STRING", {
+                    "default": "front,side,back",
+                    "tooltip": "Used only when no layout is connected.",
+                }),
+                "extra": ("STRING", {
+                    "multiline": True,
+                    "default": "",
+                    "tooltip": "Any further constraint, appended at the end.",
+                }),
+            },
+        }
+
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("prompt", "summary")
+    FUNCTION = "run"
+    CATEGORY = CATEGORY
+
+    def run(self, action, subject, loop, layout=None, view_names="front,side,back",
+            extra=""):
+        background = None
+        views = [v.strip() for v in view_names.split(",") if v.strip()]
+        if layout:
+            doc = json.loads(layout)
+            views = [p["view"] for p in doc.get("panels", [])] or views
+            background = doc.get("background")
+
+        text = prompt_mod.build(
+            action=action, views=views, subject=subject,
+            background=background, loop=bool(loop), extra=extra,
+        )
+        return (text, prompt_mod.summarise(action))
 
 
 # ------------------------------------------------------------ 1. compose
@@ -453,6 +526,7 @@ class SaveKeyframeManifest:
 
 
 NODE_CLASS_MAPPINGS = {
+    "FMM_MotionPrompt": MotionPrompt,
     "FMM_TriptychCompose": TriptychCompose,
     "FMM_TriptychRegister": TriptychRegister,
     "FMM_SampleKeyframes": SampleKeyframes,
@@ -462,6 +536,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "FMM_MotionPrompt": "Motion Prompt",
     "FMM_TriptychCompose": "Triptych Compose",
     "FMM_TriptychRegister": "Triptych Register",
     "FMM_SampleKeyframes": "Sample Keyframes",

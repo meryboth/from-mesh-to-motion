@@ -154,10 +154,41 @@ rather than re-authoring the mesh.
 
 ---
 
+## Where you say what the animation is
+
+One place: the **Motion Prompt** node, or `motion.action` in `config/job.json`. You write only
+what the character does —
+
+```json
+"action": "raises its right arm and waves twice, then lowers it"
+```
+
+— and the node builds the ~130 words around it that lock the panels down: static camera, no zoom,
+panels that never move or change angle, all copies in unison. Those words are the reason the three
+views agree, and they are easy to break by accident, so they are not yours to edit.
+
+Two details in that template were arrived at by running it, not by taste. **The action goes first**:
+with the constraints in front, a "crouch and jump" prompt produced arms overhead and feet that never
+left the ground. And the **background description is read from the triptych's own layout**, so the
+prompt cannot describe a white canvas the model is being handed in grey — a repainted background
+breaks the split step.
+
+Check what will be sent before spending anything on it:
+
+```bash
+python -m pipeline prompt --triptych out/03_triptych/triptych_rest.png
+```
+
+The same node also emits the short `summary` that goes into `keyframes.json` and the Astra handoff,
+so the sheet's provenance cannot claim one motion while the clip shows another.
+
+---
+
 ## The nodes
 
 | Node | In → out |
 |---|---|
+| **Motion Prompt** | the action alone → the full, panel-locking video prompt |
 | **Triptych Compose** | three ortho views → one canvas + its layout |
 | **Triptych Register** | canvas + frame 0 → the layout corrected for what came back |
 | **Sample Keyframes** | video frames → N evenly spaced stills |

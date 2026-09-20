@@ -19,6 +19,7 @@ import subprocess
 import sys
 
 from . import manifest as manifest_mod
+from . import prompt as prompt_mod
 from . import repair as repair_mod
 from . import sheet as sheet_mod
 from . import video as video_mod
@@ -106,7 +107,7 @@ def cmd_triptych(args) -> None:
     print("  canvas " + str(layout.width) + "x" + str(layout.height)
           + "  ratio " + format(layout.width / layout.height, ".4f"))
     print("  layout -> " + os.path.splitext(out_path)[0] + ".layout.json")
-    print("\nNext: upload this image and run workflows/03_triptych_to_motion.json")
+    print("\nNext: upload this image and run workflows/02_triptych_to_keyframes.json")
 
 
 
@@ -161,7 +162,8 @@ def cmd_keyframes(args) -> None:
 
     doc = manifest_mod.build(
         subject=job.get("subject", {}),
-        motion=dict(job.get("motion", {}), fps=fps),
+        motion=dict(job.get("motion", {}), fps=fps,
+                    description=prompt_mod.summarise(motion_action(job))),
         views=views,
         keyframes=keyframes,
         provenance=dict(job.get("provenance", {}), source_video=os.path.abspath(args.video)),
@@ -179,6 +181,49 @@ def cmd_keyframes(args) -> None:
     print("\nsheet    -> " + sheet_path)
     print("manifest -> " + man_path)
     print("handoff  -> " + handoff)
+
+
+# ----------------------------------------------------------------- prompt
+
+
+def motion_action(job: dict) -> str:
+    """The one sentence the user wrote, wherever they wrote it."""
+    motion = job.get("motion", {})
+    # `action` is the field that drives generation; `description` is the older
+    # name and is still honoured so existing job files keep working.
+    return (motion.get("action") or motion.get("description") or "").strip()
+
+
+def cmd_prompt(args) -> None:
+    """Print the full video prompt built from the job's action.
+
+    This is the CLI half of the Motion Prompt node. Both call the same builder,
+    so a prompt pasted from here is the one the graph would have sent.
+    """
+    job = load_job(args.job)
+    action = motion_action(job)
+    if not action:
+        raise SystemExit(
+            "No motion action in the job file. Set motion.action, for example:"
+            '\n  "action": "raises its right arm and waves twice, then lowers it"'
+        )
+
+    views = None
+    background = None
+    if args.triptych and os.path.exists(args.triptych):
+        layout = sheet_mod.load_layout(args.triptych)
+        views = [p.view for p in layout.panels]
+        background = layout.background
+    views = views or [v.strip() for v in args.views.split(",") if v.strip()]
+
+    print(prompt_mod.build(
+        action=action,
+        views=views,
+        subject=job.get("subject", {}).get("kind", "character"),
+        background=background,
+        loop=bool(job.get("motion", {}).get("loop", False)),
+        extra=job.get("motion", {}).get("extra", ""),
+    ))
 
 
 # --------------------------------------------------------------------- qa
@@ -288,6 +333,13 @@ def build_parser() -> argparse.ArgumentParser:
     k.add_argument("--no-register", action="store_true",
                    help="Skip first-frame registration and stretch to fit instead")
     k.set_defaults(func=cmd_keyframes)
+
+    pr = sub.add_parser("prompt", help="Print the video prompt built from the job action")
+    pr.add_argument("--job", default=None)
+    pr.add_argument("--triptych", default=None,
+                    help="Take view names and background from this triptych's layout")
+    pr.add_argument("--views", default=",".join(DEFAULT_VIEWS))
+    pr.set_defaults(func=cmd_prompt)
 
     q = sub.add_parser("qa", help="Score a finished sheet for identity drift")
     q.add_argument("--run", default="out/05_keyframes")

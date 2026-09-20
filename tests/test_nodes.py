@@ -65,8 +65,9 @@ def main() -> int:
     pack = load_pack()
     N = pack.NODE_CLASS_MAPPINGS
     expected = {
-        "FMM_TriptychCompose", "FMM_TriptychRegister", "FMM_SampleKeyframes",
-        "FMM_TriptychSplit", "FMM_KeyframeSheet", "FMM_SaveKeyframeManifest",
+        "FMM_MotionPrompt", "FMM_TriptychCompose", "FMM_TriptychRegister",
+        "FMM_SampleKeyframes", "FMM_TriptychSplit", "FMM_KeyframeSheet",
+        "FMM_SaveKeyframeManifest",
     }
     missing = expected - set(N)
     assert not missing, "Missing nodes: " + ", ".join(sorted(missing))
@@ -97,6 +98,25 @@ def main() -> int:
           + "  ratio " + format(ratio, ".4f"))
     assert abs(ratio - 21 / 9) < 0.01, "target ratio not honoured: " + format(ratio, ".4f")
     assert len(lay["panels"]) == 3
+
+    # The motion prompt must carry the action AND the scaffolding that locks the
+    # panels down. A prompt that lost either is the failure worth testing for:
+    # losing the action gives the wrong animation, losing the scaffolding gives
+    # panels that disagree, and neither raises.
+    action = "raises its right arm and waves twice, then lowers it"
+    text, summary = N["FMM_MotionPrompt"]().run(
+        action, "clay toy character", False, layout=layout)
+    assert action in text, "the action was dropped from the prompt"
+    assert text.strip().startswith(action),         "the action must lead -- constraints first stopped the motion happening"
+    for required in ("no pan", "no zoom", "never change their viewing angle",
+                     "perfect unison", "left panel front view",
+                     "centre panel side profile", "right panel back view"):
+        assert required in text, "prompt lost its scaffolding: " + required
+    assert "light grey" in text, "background description does not match the canvas"
+    assert summary.startswith("Raises its right arm")
+    looped, _ = N["FMM_MotionPrompt"]().run(action, "toy", True, layout=layout)
+    assert "loops cleanly" in looped
+    print("motion prompt " + str(len(text.split())) + " words, action first")
 
     # Fake what a video model does to the canvas. A plain rescale is the benign
     # case; a centre-crop is the one registration exists for, so the test uses

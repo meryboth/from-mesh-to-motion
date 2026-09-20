@@ -1,9 +1,11 @@
 {
   "subject": {
-    "name": "C_robot"
+    "name": "ThinRobot",
+    "kind": "thin white robot"
   },
   "motion": {
-    "description": "Raises its right arm and waves twice, then lowers it",
+    "action": "raises its right arm and waves twice, then lowers it",
+    "extra": "",
     "fps": 24,
     "duration_s": 5,
     "loop": false
