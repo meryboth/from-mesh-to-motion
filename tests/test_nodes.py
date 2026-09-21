@@ -67,7 +67,7 @@ def main() -> int:
     expected = {
         "FMM_MotionPrompt", "FMM_TriptychCompose", "FMM_TriptychRegister",
         "FMM_SampleKeyframes", "FMM_TriptychSplit", "FMM_KeyframeSheet",
-        "FMM_SaveKeyframeManifest",
+        "FMM_SaveKeyframeManifest", "FMM_IdentityQA",
     }
     missing = expected - set(N)
     assert not missing, "Missing nodes: " + ", ".join(sorted(missing))
@@ -182,6 +182,25 @@ def main() -> int:
         "manifest paths must be relative so the folder stays portable"
     assert "6 keyframes" in handoff and "front, side, back" in handoff
     print("manifest -> " + os.path.relpath(man_path, REPO))
+
+    # Real times, not index/fps: k01 of 6 picks over 12 frames is frame 2.
+    assert doc["keyframes"][1]["frame"] == times[1]["frame"]
+    assert abs(doc["keyframes"][1]["t"] - times[1]["t"]) < 1e-6
+
+    # Unwired timings must refuse, not guess -- the guess was eight times off.
+    try:
+        N["FMM_SaveKeyframeManifest"]().run(
+            va, vb, vc, out_names, "", "x", "y", 24.0, False, out_dir)
+    except ValueError as exc:
+        assert "timings" in str(exc)
+        print("manifest refuses to guess timings")
+    else:
+        raise AssertionError("manifest accepted missing timings")
+
+    qa = N["FMM_IdentityQA"]().run(va, vb, vc, layout2, 0.03)
+    report, passed = qa["result"]
+    assert report.startswith(("PASS", "FAIL")) and isinstance(passed, bool)
+    print("identity QA: " + report.splitlines()[0])
 
     print("\nOK")
     return 0

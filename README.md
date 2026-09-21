@@ -128,7 +128,7 @@ For the ComfyUI nodes, install from the registry — via ComfyUI Manager, or:
 comfy node install from-mesh-to-motion
 ```
 
-The seven nodes appear under **from-mesh-to-motion**. Cloning into `ComfyUI/custom_nodes/` works
+The eight nodes appear under **from-mesh-to-motion**. Cloning into `ComfyUI/custom_nodes/` works
 too, and is the right choice if you want the example assets and the write-up, which the registry
 package deliberately leaves out.
 
@@ -143,8 +143,9 @@ pip install -r requirements.txt
 Blender 4.2+ is needed for the anchor renders — no add-ons, no GPU. The pipeline finds it on
 `PATH`, in `$BLENDER`, or in the usual install locations.
 
-Your GPU is barely involved: the six local nodes are Pillow and numpy, and the one heavy step is a
-partner API node that runs on Comfy's side. A 6 GB laptop card is plenty.
+Your GPU is barely involved: all eight nodes in the pack are Pillow and numpy, and the one heavy
+node in the graph is MiniMax, a ComfyUI partner node that runs on Comfy's side. A 6 GB laptop card
+is plenty.
 
 ---
 
@@ -170,6 +171,39 @@ Step 3 is `workflows/02_triptych_to_keyframes.json`, which does steps 2–5 insi
 
 If your mesh does not face the camera on import, `--yaw-offset 90` rotates every view together
 rather than re-authoring the mesh.
+
+---
+
+## How to use it
+
+The full walkthrough, with the graph drawn and explained node by node, is in the
+[write-up](docs/report/index.html#how-to-use-it). The short version:
+
+1. **Install** ComfyUI (the desktop app is simplest) and this pack — ComfyUI Manager, or
+   `comfy node install from-mesh-to-motion`.
+2. **Sign in to a Comfy account** in ComfyUI, or set *Settings → API Keys → Comfy API Key*. Only the
+   MiniMax video node uses it, once per run. It is not the registry key.
+3. **Pick a character the method can handle**: chunky, readable from every side, A-pose, nothing
+   loose. See [What can actually be animated](#what-can-actually-be-animated).
+4. **Render the three views** with Blender, from `ComfyUI/custom_nodes/from-mesh-to-motion`:
+   `python -m pipeline anchors --mesh character.glb --out anchors`. If the character faces the wrong
+   way, add `--yaw-offset 90` (or 180, 270). No mesh? `workflows/01_concept_to_mesh.json` makes one.
+5. **Open** `workflows/02_triptych_to_keyframes.json` in ComfyUI.
+6. **Load** `beauty_front.png`, `beauty_side.png`, `beauty_back.png` into the three *Load Image*
+   nodes, in that order.
+7. **Write the action** in the *Write only the action here* node — just what the character does.
+8. **Queue.** One paid call, a few minutes. Change the seed on the video node for another take.
+9. **Check** the *Triptych Register* report (skew) and the *Identity QA* report (PASS/FAIL), and look
+   at the side column yourself — the QA measures colour, and profiles fail on shape.
+10. **Collect** from `ComfyUI/output/from_mesh_to_motion/` and give Astra the rigged rest-pose mesh,
+    `keyframe_sheet.png` and the text of `handoff.txt`.
+
+| You see | It means |
+|---|---|
+| *The three views differ in size* | The renders came from different runs — render all three together. |
+| *Save Keyframe Manifest got timings for 0 of 16* | The *timings* link from Sample Keyframes is missing — reload the workflow file. |
+| A skew warning | The model reshaped the canvas by more than 2%; registration corrects it, glance at row one. |
+| *Identity QA: FAIL* | Colour drifted — usually loose cloth or a thin profile. Simplify, or try another seed. |
 
 ---
 
@@ -256,6 +290,7 @@ turning around, or a choreographed multi-beat sequence — no, and by design.
 | **Triptych Split** | stills + layout → three per-view batches |
 | **Keyframe Sheet** | three batches → the labelled contact sheet |
 | **Save Keyframe Manifest** | → `keyframes.json` + `handoff.txt` |
+| **Identity QA** | three batches → drift report and pass/fail, the same gate as `pipeline qa` |
 
 The layout travels between them as JSON, so it survives a save/reload and can be read by a human
 when a run looks wrong.
@@ -283,6 +318,7 @@ pipeline/                   sheet geometry, video sampling, manifest, CLI
 comfy_nodes/                the seven ComfyUI nodes
 workflows/                  editor graphs, plus API-format copies under api/
 scripts/build_workflows.py  generates both formats from one spec
+scripts/build_graph_diagram.py  draws the graph into the write-up, from the workflow file
 tests/test_nodes.py         round-trip test, loaded the way ComfyUI loads it
 docs/report/index.html      the write-up
 config/job.example.json     subject + motion description

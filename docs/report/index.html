@@ -79,6 +79,33 @@ footer{border-top:1px solid var(--line); margin-top:72px; padding:32px 0 72px;
 .toggle{position:fixed; top:14px; right:14px; z-index:10; background:var(--surface);
   border:1px solid var(--line); color:var(--ink-2); border-radius:8px;
   padding:7px 11px; font:inherit; font-size:.78rem; cursor:pointer}
+.graph{width:100%;height:auto;display:block;margin:28px 0 8px;font-family:var(--sans)}
+.graph .g-edge{fill:none;stroke:var(--ink-3);stroke-width:1.4;opacity:.75}
+.graph .g-edge.layout{stroke:var(--accent);opacity:.9}
+.graph .g-edge.meta{stroke-dasharray:3 4;stroke-width:1;opacity:.45}
+.graph .g-arrow{fill:var(--ink-3)}
+.graph .g-mult{font-size:11px;fill:var(--ink-3)}
+.graph .g-node rect{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.graph .g-node.ours rect{fill:var(--accent-soft);stroke:var(--accent)}
+.graph .g-node.cloud rect{fill:var(--warn-soft);stroke:var(--warn)}
+.graph .g-node.save rect{stroke-dasharray:4 3}
+.graph .g-name{font-size:13px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.graph .g-sub{font-size:11px;fill:var(--ink-2);text-anchor:middle}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.82rem;color:var(--ink-3);margin:0 0 28px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px;border:1px solid var(--line);background:var(--surface)}
+.legend .l-ours::before{background:var(--accent-soft);border-color:var(--accent)}
+.legend .l-cloud::before{background:var(--warn-soft);border-color:var(--warn)}
+.legend .l-save::before{border-style:dashed}
+.legend .l-layout::before{height:0;border:0;border-top:2px solid var(--accent);border-radius:0;vertical-align:3px}
+.legend .l-meta::before{height:0;border:0;border-top:2px dashed var(--ink-3);border-radius:0;vertical-align:3px}
+ol.howto{padding-left:1.3em;margin:20px 0}
+ol.howto>li{margin:0 0 26px;padding-left:4px}
+ol.howto>li>b{display:block;font-size:1.02rem;margin-bottom:4px}
+.stage{display:grid;grid-template-columns:34px 1fr;gap:4px 12px;margin:0 0 18px}
+.stage .n{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+  font-size:.8rem;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.stage p{margin:0}
 @media(max-width:640px){body{font-size:16px} header{padding:40px 0 28px}}
 </style>
 </head>
@@ -228,6 +255,116 @@ panels against the source anchors, per 255. Regenerate with
   <p>Registration costs about half a point of resampling error when it is unnecessary and saves
   about twenty when it is not. It also turns a silent 2% shear into a printed warning, which is
   worth more than the pixels: a sheared sheet still looks plausible.</p>
+</div>
+
+<h2 id="the-comfyui-graph">The ComfyUI graph</h2>
+<p class="sub">Seventeen nodes, one run, drawn from the workflow file itself.</p>
+
+<p>Everything above runs as one graph, <code>workflows/02_triptych_to_keyframes.json</code>. The
+diagram below is generated from that file by <code>scripts/build_graph_diagram.py</code> rather than
+drawn, so it cannot describe a graph that no longer exists. It reads top to bottom.</p>
+
+<!-- graph:start -->
+<svg class="graph" viewBox="0 0 760 985" role="img" aria-label="The ComfyUI graph, top to bottom" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" class="g-arrow"/></marker></defs>
+<path class="g-edge layout" d="M353,165 L457,165" marker-end="url(#arr)"/>
+<path class="g-edge" d="M243,835 L297,835" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,422 C400,448 330,448 330,473" marker-end="url(#arr)"/>
+<path class="g-edge" d="M330,527 C330,555 160,555 160,583" marker-end="url(#arr)"/>
+<path class="g-edge" d="M580,637 C580,665 400,665 400,693" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M160,637 C160,665 400,665 400,693" marker-end="url(#arr)"/>
+<path class="g-edge" d="M140,862 C140,890 140,890 140,918" marker-end="url(#arr)"/>
+<path class="g-edge" d="M135,77 C135,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M380,77 C380,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M625,77 C625,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M250,192 C250,222 650,222 650,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M250,192 C250,222 400,222 400,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M560,192 C560,222 400,222 400,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,307 C400,338 650,338 650,368" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,307 C400,338 400,338 400,368" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,747 C400,778 140,778 140,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="278" y="782">x3</text>
+<path class="g-edge" d="M400,747 C400,778 400,778 400,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="408" y="782">x3</text>
+<path class="g-edge" d="M400,747 C400,778 650,778 650,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="533" y="782">x3</text>
+<path class="g-edge" d="M400,422 L400,428 Q400,436 408,436 L740,436 Q748,436 748,444 L748,561 Q748,569 740,569 L588,569 Q580,569 580,577 L580,583" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M160,637 L160,643 Q160,651 168,651 L731,651 Q739,651 739,659 L739,786 Q739,794 731,794 L658,794 Q650,794 650,802 L650,808" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M250,192 L250,198 Q250,206 242,206 L20,206 Q12,206 12,214 L12,561 Q12,569 20,569 L152,569 Q160,569 160,577 L160,583" marker-end="url(#arr)"/>
+<g class="g-node input"><rect x="32" y="23" width="206" height="54" rx="8"/><text class="g-name" x="135" y="45">LoadImage</text><text class="g-sub" x="135" y="63">front render</text></g>
+<g class="g-node input"><rect x="277" y="23" width="206" height="54" rx="8"/><text class="g-name" x="380" y="45">LoadImage</text><text class="g-sub" x="380" y="63">side render</text></g>
+<g class="g-node input"><rect x="522" y="23" width="206" height="54" rx="8"/><text class="g-name" x="625" y="45">LoadImage</text><text class="g-sub" x="625" y="63">back render</text></g>
+<g class="g-node ours"><rect x="457" y="138" width="206" height="54" rx="8"/><text class="g-name" x="560" y="160">MotionPrompt</text><text class="g-sub" x="560" y="178">you write the action here</text></g>
+<g class="g-node ours"><rect x="147" y="138" width="206" height="54" rx="8"/><text class="g-name" x="250" y="160">TriptychCompose</text><text class="g-sub" x="250" y="178">3 views -&gt; one canvas</text></g>
+<g class="g-node save"><rect x="575" y="253" width="150" height="54" rx="8"/><text class="g-name" x="650" y="275">SaveImage</text><text class="g-sub" x="650" y="293">keeps the submitted canvas</text></g>
+<g class="g-node cloud"><rect x="297" y="253" width="206" height="54" rx="8"/><text class="g-name" x="400" y="275">MiniMax H3  (paid)</text><text class="g-sub" x="400" y="293">animates all panels at once</text></g>
+<g class="g-node save"><rect x="575" y="368" width="150" height="54" rx="8"/><text class="g-name" x="650" y="390">SaveVideo</text><text class="g-sub" x="650" y="408">keeps the clip</text></g>
+<g class="g-node core"><rect x="297" y="368" width="206" height="54" rx="8"/><text class="g-name" x="400" y="390">GetVideoComponents</text><text class="g-sub" x="400" y="408">clip -&gt; frames</text></g>
+<g class="g-node core"><rect x="227" y="473" width="206" height="54" rx="8"/><text class="g-name" x="330" y="495">ImageFromBatch</text><text class="g-sub" x="330" y="513">frame 0 only</text></g>
+<g class="g-node ours"><rect x="57" y="583" width="206" height="54" rx="8"/><text class="g-name" x="160" y="605">TriptychRegister</text><text class="g-sub" x="160" y="623">undoes the model&#x27;s resize</text></g>
+<g class="g-node ours"><rect x="477" y="583" width="206" height="54" rx="8"/><text class="g-name" x="580" y="605">SampleKeyframes</text><text class="g-sub" x="580" y="623">16 frames + their times</text></g>
+<g class="g-node ours"><rect x="297" y="693" width="206" height="54" rx="8"/><text class="g-name" x="400" y="715">TriptychSplit</text><text class="g-sub" x="400" y="733">canvas -&gt; 3 view batches</text></g>
+<g class="g-node ours"><rect x="37" y="808" width="206" height="54" rx="8"/><text class="g-name" x="140" y="830">KeyframeSheet</text><text class="g-sub" x="140" y="848">labelled contact sheet</text></g>
+<g class="g-node save"><rect x="65" y="918" width="150" height="54" rx="8"/><text class="g-name" x="140" y="940">SaveImage</text><text class="g-sub" x="140" y="958">writes the sheet PNG</text></g>
+<g class="g-node ours"><rect x="297" y="808" width="206" height="54" rx="8"/><text class="g-name" x="400" y="830">SaveKeyframeManifest</text><text class="g-sub" x="400" y="848">keyframes.json, handoff.txt</text></g>
+<g class="g-node ours"><rect x="547" y="808" width="206" height="54" rx="8"/><text class="g-name" x="650" y="830">IdentityQA</text><text class="g-sub" x="650" y="848">drift gate: pass / fail</text></g>
+</svg>
+<!-- graph:end -->
+
+<div class="legend">
+  <span class="l-ours">this pack</span>
+  <span class="l-cloud">partner API node &mdash; the only paid, remote step</span>
+  <span>ComfyUI core</span>
+  <span class="l-save">writes a file</span>
+  <span class="l-layout">layout (panel geometry)</span>
+</div>
+<p style="margin-top:-16px;color:var(--ink-3);font-size:.85rem">Not drawn: the links that carry
+numbers rather than pixels &mdash; keyframe timings and the clip&rsquo;s frame rate from Sample
+Keyframes and Get Video Components, and the motion summary from Motion Prompt, all running into
+Keyframe Sheet and Save Keyframe Manifest.</p>
+
+<div class="stage"><div class="n">1</div><p><strong>Load image &times;3.</strong> The front, side and
+back renders from the Blender pass. They have to be one render at one size &mdash; that shared scale
+is the property everything downstream leans on, and nothing downstream can restore it.</p></div>
+
+<div class="stage"><div class="n">2</div><p><strong>Triptych Compose</strong> glues them onto one
+canvas, cropping all three by the same window and padding to whichever aspect ratio on the partner
+menu is nearest. It outputs the canvas and a <em>layout</em>: where each panel sits, in pixels. The
+layout travels through the rest of the graph as JSON.</p></div>
+
+<div class="stage"><div class="n">3</div><p><strong>Motion Prompt</strong> is where you say what the
+character does. It reads the layout so the prompt names the right panels and describes the real
+background, and feeds the video node its prompt and the manifest its summary.</p></div>
+
+<div class="stage"><div class="n">4</div><p><strong>MiniMax H3</strong> animates the canvas. This is
+the one node that leaves your machine, the one that costs money, and the one that decides whether
+the motion is any good. Everything else is geometry.</p></div>
+
+<div class="stage"><div class="n">5</div><p><strong>Get Video Components</strong> turns the clip
+back into frames and reports its real frame rate; <strong>Get Image from Batch</strong> pulls out
+frame 0 alone.</p></div>
+
+<div class="stage"><div class="n">6</div><p><strong>Triptych Register</strong> compares frame 0 with
+the canvas that was submitted and corrects the layout for however the model resized, letterboxed or
+cropped it; its report prints the skew and warns above 2%. <strong>Sample Keyframes</strong> picks
+sixteen evenly spaced frames and records the frame index and time of each.</p></div>
+
+<div class="stage"><div class="n">7</div><p><strong>Triptych Split</strong> cuts those frames back
+into three per-view batches, using the corrected layout.</p></div>
+
+<div class="stage"><div class="n">8</div><p><strong>Keyframe Sheet</strong> draws the labelled
+contact sheet; <strong>Save Keyframe Manifest</strong> writes the per-view PNGs,
+<code>keyframes.json</code> and <code>handoff.txt</code>; <strong>Identity QA</strong> scores the
+sheet for drift and passes or fails it.</p></div>
+
+<div class="callout warn">
+  <strong>A bug this section found</strong>
+  <p>Laying the graph out from its own file showed that the <em>timings</em> output of Sample
+  Keyframes was wired to nothing. The manifest then fell back on guessing <code>t = index / fps</code>,
+  which put keyframe 1 at 0.04&nbsp;s instead of 0.33&nbsp;s &mdash; a sheet whose timing was off by
+  a factor of eight, handed to the rigging tool without a word. The CLI never had the bug; only the
+  graph did. It is wired now, and the manifest node refuses to run without timings rather than
+  guessing again.</p>
 </div>
 
 <h2>Does it work on anything else?</h2>
@@ -492,32 +629,101 @@ Do not invent poses between keyframes beyond smooth interpolation, and
 do not change the character's proportions — the mesh is the authority
 on those, the sheet is the authority only on pose.</code></pre>
 
-<h2>Reproduce it</h2>
+<h2 id="how-to-use-it">How to use it</h2>
+<p class="sub">From a mesh to a sheet Astra can animate, in ten steps.</p>
 
+<ol class="howto">
+<li><b>Install ComfyUI and the pack.</b>
+<p>The <a href="https://www.comfy.org/download">ComfyUI desktop app</a> is the shortest route. Then
+<em>Manager &rarr; Custom Nodes &rarr; search &ldquo;From Mesh to Motion&rdquo; &rarr; Install</em>,
+and restart. From a terminal it is one line:</p>
+<pre><code>comfy node install from-mesh-to-motion</code></pre>
+<p>Your GPU barely matters. All eight nodes in the pack are Pillow and numpy; the one heavy node in
+the graph is MiniMax, which is a ComfyUI partner node and runs on Comfy&rsquo;s side &mdash; a
+6&nbsp;GB laptop card is plenty.</p></li>
+
+<li><b>Give ComfyUI a Comfy account.</b>
+<p>Sign in from the desktop app, or paste a key under <em>Settings &rarr; API Keys &rarr; Comfy API
+Key</em>. Only the MiniMax node needs it, and it bills your account once per run. This is not the
+registry key used to publish the pack; the two are unrelated.</p></li>
+
+<li><b>Choose a character the method can handle.</b>
+<p>Chunky, with a silhouette that reads from every side, standing in an A-pose, with nothing loose.
+Cloth, hair and wire-thin limbs are what failed in testing &mdash; read <em>What can actually be
+animated</em> above before spending anything.</p></li>
+
+<li><b>Render the three orthographic views.</b>
+<p>This step runs outside ComfyUI, in Blender 4.2+, through the CLI that ships inside the pack. From
+<code>ComfyUI/custom_nodes/from-mesh-to-motion</code>:</p>
+<pre><code>python -m pipeline anchors --mesh path/to/character.glb --out anchors</code></pre>
+<p>It writes <code>beauty_front.png</code>, <code>beauty_side.png</code> and
+<code>beauty_back.png</code>. Open them: if the character faces away or sideways, re-run with
+<code>--yaw-offset 90</code> (or 180, 270). No mesh yet? <code>workflows/01_concept_to_mesh.json</code>
+turns a front-on concept image into an A-posed GLB through Meshy, which is also paid.</p></li>
+
+<li><b>Open the graph.</b>
+<p>Drag <code>workflows/02_triptych_to_keyframes.json</code> onto the ComfyUI canvas. It ships inside
+the pack&rsquo;s folder, so a registry install has it too.</p></li>
+
+<li><b>Load the renders.</b>
+<p>The three <em>Load Image</em> nodes at the top take front, side and back, in that order. Use the
+three files from one render &mdash; views of different sizes are refused on purpose.</p></li>
+
+<li><b>Write the action.</b>
+<p>In <em>Write only the action here</em>, describe what the character does and nothing else, e.g.
+<em>&ldquo;raises its right arm and waves twice, then lowers it&rdquo;</em>. Set <em>subject</em> to
+how the character should be referred to, and switch on <em>loop</em> for a cycle. The camera and
+panel instructions are added for you, in the order that was measured to work.</p></li>
+
+<li><b>Queue it.</b>
+<p>One MiniMax call per run, a few minutes. The seed is fixed, so re-queueing identical inputs
+reuses the cached result instead of paying again &mdash; change the seed on the video node for
+another take.</p></li>
+
+<li><b>Read the two checks before trusting the sheet.</b>
+<p><em>Triptych Register</em> prints how the model reshaped the canvas; a skew warning means look
+at the first row of the sheet. <em>Identity QA</em> prints PASS or FAIL with drift per view. On a
+FAIL, simplify the action, remove anything loose from the character, or try another seed. And look
+at the side column yourself either way: the QA measures colour, and the side panel&rsquo;s typical
+failure is shape.</p></li>
+
+<li><b>Hand it over.</b>
+<p>Everything lands in <code>ComfyUI/output/from_mesh_to_motion/</code>: the sheet, the per-view
+PNGs, <code>keyframes.json</code> and <code>handoff.txt</code>; the clip is in
+<code>output/fmm/</code>. In Astra, rig the rest-pose mesh first, then give it the sheet and paste
+<code>handoff.txt</code> alongside &mdash; it tells the rigging tool how to read the sheet, and that
+the mesh is the authority on proportions while the sheet is the authority on pose.</p></li>
+</ol>
+
+<h3>When something goes wrong</h3>
+<table>
+  <thead><tr><th>You see</th><th>It means</th></tr></thead>
+  <tbody>
+    <tr><td><em>The three views differ in size</em></td><td>The renders came from different runs. Render all three together.</td></tr>
+    <tr><td><em>Save Keyframe Manifest got timings for 0 of 16</em></td><td>The link from Sample Keyframes&rsquo; <em>timings</em> is missing. Reload the workflow file.</td></tr>
+    <tr><td>A skew warning from Triptych Register</td><td>The model reshaped the canvas by more than 2%. Registration corrects it; check the first row of the sheet.</td></tr>
+    <tr><td>Identity QA: FAIL</td><td>Colour drifted past the ceiling &mdash; usually loose cloth or a thin profile. See step 9.</td></tr>
+    <tr><td>Panels agree, but the motion is wrong</td><td>Rewrite the action shorter and more physical. One beat per run.</td></tr>
+  </tbody>
+</table>
+
+<h3>Without ComfyUI</h3>
+<p>The same pipeline runs from the command line, with any image-to-video tool in the middle:</p>
 <pre><code>git clone https://github.com/meryboth/from-mesh-to-motion
 cd from-mesh-to-motion &amp;&amp; pip install -r requirements.txt
 
-python -m pipeline anchors   --mesh out/01_mesh/mascot.glb --out out/02_anchors
-python -m pipeline triptych  --anchors out/02_anchors      --out out/03_triptych
-# animate out/03_triptych/triptych_rest.png
+python -m pipeline anchors   --mesh character.glb    --out out/02_anchors
+python -m pipeline triptych  --anchors out/02_anchors --out out/03_triptych
+python -m pipeline prompt    --triptych out/03_triptych/triptych_rest.png
+# animate out/03_triptych/triptych_rest.png with that prompt; save motion.mp4
 python -m pipeline keyframes --video motion.mp4 \
-    --triptych out/03_triptych/triptych_rest.png -n 16 --out out/05_keyframes</code></pre>
+    --triptych out/03_triptych/triptych_rest.png -n 16 --out out/05_keyframes
+python -m pipeline qa        --run out/05_keyframes \
+    --triptych out/03_triptych/triptych_rest.png</code></pre>
 
-<p>Or open <code>workflows/02_triptych_to_keyframes.json</code> in ComfyUI, which does stages 3–6 in
-one graph. The node pack is published on the
-<a href="https://registry.comfy.org/nodes/from-mesh-to-motion">Comfy Registry</a>, so it installs
-through ComfyUI Manager or with one command:</p>
-
-<pre><code>comfy node install from-mesh-to-motion</code></pre>
-
-<p>The registry package is the seven nodes and the workflows, 191&nbsp;KB. The example renders,
-meshes, clips and this write-up stay in the GitHub repository — they are the research record, and
-they have no business in what somebody installs. Cloning into <code>ComfyUI/custom_nodes/</code>
-gets you both.</p>
-
-<p>The GPU is barely involved. The six local nodes are Pillow and numpy; the one heavy step is a
-partner API node that runs on Comfy's side, so a 6&nbsp;GB laptop card is enough for the whole
-graph.</p>
+<p>The registry package is the eight nodes and the workflows, a couple of hundred kilobytes. The
+example renders, meshes, clips and this write-up stay in the GitHub repository &mdash; cloning into
+<code>ComfyUI/custom_nodes/</code> gets you both.</p>
 
 <footer class="wrap">
   <p>Code MIT. The mascot, its mesh and the example renders are CC0 — they were generated for this

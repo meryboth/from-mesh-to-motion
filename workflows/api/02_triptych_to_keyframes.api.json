@@ -38,7 +38,7 @@
       "gutter": 20,
       "pad": 20,
       "background": "#E4E4E6",
-      "target_ratio": "21:9",
+      "target_ratio": "21:9,16:9,4:3,1:1",
       "crop_margin": 0.08,
       "view_a": [
         "1",
@@ -164,7 +164,10 @@
     "class_type": "FMM_KeyframeSheet",
     "inputs": {
       "names": "front,side,back",
-      "timings": "",
+      "timings": [
+        "31",
+        1
+      ],
       "thumb": 256,
       "view_a": [
         "32",
@@ -194,7 +197,10 @@
     "class_type": "FMM_SaveKeyframeManifest",
     "inputs": {
       "names": "front,side,back",
-      "timings": "",
+      "timings": [
+        "31",
+        1
+      ],
       "subject_name": "mascot",
       "motion_description": [
         "5",
@@ -222,6 +228,28 @@
       "fps_in": [
         "22",
         2
+      ]
+    }
+  },
+  "43": {
+    "class_type": "FMM_IdentityQA",
+    "inputs": {
+      "ceiling": 0.03,
+      "view_a": [
+        "32",
+        0
+      ],
+      "view_b": [
+        "32",
+        1
+      ],
+      "view_c": [
+        "32",
+        2
+      ],
+      "layout": [
+        "30",
+        0
       ]
     }
   }

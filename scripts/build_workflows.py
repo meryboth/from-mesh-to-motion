@@ -190,7 +190,7 @@ def triptych_to_keyframes():
             ("names", "front,side,back"),
             ("gutter", 20), ("pad", 20),
             ("background", "#E4E4E6"),
-            ("target_ratio", "21:9"),
+            ("target_ratio", "21:9,16:9,4:3,1:1"),
             ("crop_margin", 0.08),
         ],
         links={
@@ -297,6 +297,9 @@ def triptych_to_keyframes():
             "view_b": (32, 1, "IMAGE"),
             "view_c": (32, 2, "IMAGE"),
         },
+        # Without this link the sheet has no times on it and -- worse -- the
+        # manifest used to guess them. Both read Sample Keyframes' timings now.
+        widget_links={"timings": (31, 1, "STRING")},
         outputs=[("sheet", "IMAGE")],
         title="6 - The contact sheet",
         size=(330, 200),
@@ -328,11 +331,26 @@ def triptych_to_keyframes():
             "sheet": (40, 0, "IMAGE"),
             "fps_in": (22, 2, "FLOAT"),
         },
-        widget_links={"motion_description": (5, 1, "STRING")},
+        widget_links={"timings": (31, 1, "STRING"),
+                      "motion_description": (5, 1, "STRING")},
         optional=("sheet", "fps_in"),
         outputs=[("manifest_path", "STRING"), ("handoff_text", "STRING")],
         title="7 - keyframes.json + handoff.txt",
         size=(360, 320),
+    ))
+
+    n.append(Node(
+        43, "FMM_IdentityQA", (2040, 400),
+        widgets=[("ceiling", 0.03)],
+        links={
+            "view_a": (32, 0, "IMAGE"),
+            "view_b": (32, 1, "IMAGE"),
+            "view_c": (32, 2, "IMAGE"),
+            "layout": (30, 0, "FMM_LAYOUT"),
+        },
+        outputs=[("report", "STRING"), ("passed", "BOOLEAN")],
+        title="8 - Is the sheet worth rigging from?",
+        size=(360, 200),
     ))
 
     return n

@@ -1,8 +1,8 @@
 {
   "id": "02_triptych_to_keyframes",
   "revision": 0,
-  "last_node_id": 42,
-  "last_link_id": 27,
+  "last_node_id": 43,
+  "last_link_id": 33,
   "nodes": [
     {
       "id": 1,
@@ -171,7 +171,7 @@
           "name": "summary",
           "type": "STRING",
           "links": [
-            27
+            29
           ],
           "slot_index": 1
         }
@@ -255,7 +255,7 @@
         20,
         20,
         "#E4E4E6",
-        "21:9",
+        "21:9,16:9,4:3,1:1",
         0.08
       ],
       "widgets_values_named": {
@@ -263,7 +263,7 @@
         "gutter": 20,
         "pad": 20,
         "background": "#E4E4E6",
-        "target_ratio": "21:9",
+        "target_ratio": "21:9,16:9,4:3,1:1",
         "crop_margin": 0.08
       },
       "title": "1 - Compose the triptych"
@@ -443,7 +443,7 @@
           "type": "FLOAT",
           "links": [
             15,
-            26
+            27
           ],
           "slot_index": 2
         },
@@ -547,7 +547,8 @@
           "name": "layout",
           "type": "FMM_LAYOUT",
           "links": [
-            17
+            17,
+            33
           ],
           "slot_index": 0
         },
@@ -604,7 +605,10 @@
         {
           "name": "timings",
           "type": "STRING",
-          "links": null,
+          "links": [
+            21,
+            28
+          ],
           "slot_index": 1
         }
       ],
@@ -655,7 +659,8 @@
           "type": "IMAGE",
           "links": [
             18,
-            22
+            23,
+            30
           ],
           "slot_index": 0
         },
@@ -664,7 +669,8 @@
           "type": "IMAGE",
           "links": [
             19,
-            23
+            24,
+            31
           ],
           "slot_index": 1
         },
@@ -673,7 +679,8 @@
           "type": "IMAGE",
           "links": [
             20,
-            24
+            25,
+            32
           ],
           "slot_index": 2
         },
@@ -720,6 +727,14 @@
           "name": "view_c",
           "type": "IMAGE",
           "link": 20
+        },
+        {
+          "name": "timings",
+          "type": "STRING",
+          "widget": {
+            "name": "timings"
+          },
+          "link": 21
         }
       ],
       "outputs": [
@@ -727,8 +742,8 @@
           "name": "sheet",
           "type": "IMAGE",
           "links": [
-            21,
-            25
+            22,
+            26
           ],
           "slot_index": 0
         }
@@ -766,7 +781,7 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 21
+          "link": 22
         }
       ],
       "outputs": [],
@@ -799,29 +814,37 @@
         {
           "name": "view_a",
           "type": "IMAGE",
-          "link": 22
+          "link": 23
         },
         {
           "name": "view_b",
           "type": "IMAGE",
-          "link": 23
+          "link": 24
         },
         {
           "name": "view_c",
           "type": "IMAGE",
-          "link": 24
+          "link": 25
         },
         {
           "name": "sheet",
           "type": "IMAGE",
-          "link": 25,
+          "link": 26,
           "shape": 7
         },
         {
           "name": "fps_in",
           "type": "FLOAT",
-          "link": 26,
+          "link": 27,
           "shape": 7
+        },
+        {
+          "name": "timings",
+          "type": "STRING",
+          "widget": {
+            "name": "timings"
+          },
+          "link": 28
         },
         {
           "name": "motion_description",
@@ -829,7 +852,7 @@
           "widget": {
             "name": "motion_description"
           },
-          "link": 27
+          "link": 29
         }
       ],
       "outputs": [
@@ -868,6 +891,67 @@
         "output_dir": "from_mesh_to_motion"
       },
       "title": "7 - keyframes.json + handoff.txt"
+    },
+    {
+      "id": 43,
+      "type": "FMM_IdentityQA",
+      "pos": [
+        2040,
+        400
+      ],
+      "size": [
+        360,
+        200
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "view_a",
+          "type": "IMAGE",
+          "link": 30
+        },
+        {
+          "name": "view_b",
+          "type": "IMAGE",
+          "link": 31
+        },
+        {
+          "name": "view_c",
+          "type": "IMAGE",
+          "link": 32
+        },
+        {
+          "name": "layout",
+          "type": "FMM_LAYOUT",
+          "link": 33
+        }
+      ],
+      "outputs": [
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "passed",
+          "type": "BOOLEAN",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FMM_IdentityQA"
+      },
+      "widgets_values": [
+        0.03
+      ],
+      "widgets_values_named": {
+        "ceiling": 0.03
+      },
+      "title": "8 - Is the sheet worth rigging from?"
     }
   ],
   "links": [
@@ -1033,6 +1117,14 @@
     ],
     [
       21,
+      31,
+      1,
+      40,
+      3,
+      "STRING"
+    ],
+    [
+      22,
       40,
       0,
       41,
@@ -1040,31 +1132,31 @@
       "IMAGE"
     ],
     [
-      22,
-      32,
-      0,
-      42,
-      0,
-      "IMAGE"
-    ],
-    [
       23,
       32,
-      1,
+      0,
       42,
-      1,
+      0,
       "IMAGE"
     ],
     [
       24,
       32,
+      1,
+      42,
+      1,
+      "IMAGE"
+    ],
+    [
+      25,
+      32,
       2,
       42,
       2,
       "IMAGE"
     ],
     [
-      25,
+      26,
       40,
       0,
       42,
@@ -1072,7 +1164,7 @@
       "IMAGE"
     ],
     [
-      26,
+      27,
       22,
       2,
       42,
@@ -1080,12 +1172,52 @@
       "FLOAT"
     ],
     [
-      27,
-      5,
+      28,
+      31,
       1,
       42,
       5,
       "STRING"
+    ],
+    [
+      29,
+      5,
+      1,
+      42,
+      6,
+      "STRING"
+    ],
+    [
+      30,
+      32,
+      0,
+      43,
+      0,
+      "IMAGE"
+    ],
+    [
+      31,
+      32,
+      1,
+      43,
+      1,
+      "IMAGE"
+    ],
+    [
+      32,
+      32,
+      2,
+      43,
+      2,
+      "IMAGE"
+    ],
+    [
+      33,
+      30,
+      0,
+      43,
+      3,
+      "FMM_LAYOUT"
     ]
   ],
   "groups": [],

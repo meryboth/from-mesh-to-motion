@@ -1,6 +1,6 @@
 """ComfyUI nodes for the mesh -> keyframe-sheet pipeline.
 
-Seven nodes, in the order a graph uses them:
+Eight nodes, in the order a graph uses them:
 
   MotionPrompt      the action alone   -> the full, panel-locking video prompt
   TriptychCompose   three ortho views  -> one canvas + its layout
@@ -9,6 +9,7 @@ Seven nodes, in the order a graph uses them:
   TriptychSplit     stills + layout    -> three per-view batches
   KeyframeSheet     three batches      -> the labelled contact sheet
   SaveKeyframeManifest                 -> keyframes.json + handoff.txt
+  IdentityQA        three batches      -> drift report and a pass/fail
 
 The layout travels between them as a JSON string (FMM_LAYOUT) so it survives a
 save/reload of the graph and can be read by a human when a run looks wrong.
@@ -25,6 +26,7 @@ from PIL import Image
 
 from ..pipeline import manifest as manifest_mod
 from ..pipeline import prompt as prompt_mod
+from ..pipeline import repair as repair_mod
 from ..pipeline import sheet as sheet_mod
 from ..pipeline import video as video_mod
 
@@ -491,6 +493,19 @@ class SaveKeyframeManifest:
 
         batches = [view_a, view_b, view_c]
         n = min(b.shape[0] for b in batches)
+
+        # Timing is the one thing the rigging tool cannot recover from the images,
+        # so there is no fallback. An earlier version guessed t = index / fps when
+        # this input was left unwired, which put k01 at 0.04 s instead of 0.33 s
+        # and handed Astra a sheet whose timing was eight times off -- plausibly, silently.
+        if len(times) < n:
+            raise ValueError(
+                "Save Keyframe Manifest got timings for " + str(len(times)) + " of "
+                + str(n) + " keyframes. Wire Sample Keyframes' `timings` output into "
+                "this node's `timings` input: without it the manifest would have to "
+                "guess when each pose happens, and a guess there is worse than nothing."
+            )
+
         keyframes = []
         for i in range(n):
             stem = "k" + str(i).zfill(2)
@@ -499,10 +514,8 @@ class SaveKeyframeManifest:
                 p = os.path.join(views_dir, stem + "_" + view + ".png")
                 to_pil(batch, i).save(p)
                 written[view] = p
-            t = times[i].get("t") if i < len(times) else i / fps
-            keyframes.append({"index": i, "t": t,
-                              "frame": times[i].get("frame") if i < len(times) else None,
-                              "views": written})
+            keyframes.append({"index": i, "t": times[i].get("t"),
+                              "frame": times[i].get("frame"), "views": written})
 
         sheet_path = None
         if sheet is not None:
@@ -525,8 +538,70 @@ class SaveKeyframeManifest:
         return (man_path, text)
 
 
+class IdentityQA:
+    """Score the finished sheet for identity drift, inside the graph.
+
+    The same measurement as `python -m pipeline qa`, so a sheet can be checked
+    without leaving ComfyUI. Each view's palette comes from its own k00, which has
+    been through the same video encoder as every other frame -- anything k00
+    shares with them is codec, not drift.
+
+    The metric is pose-blind on purpose; see pipeline/repair.py for the version
+    that was not, and why it had to go.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "view_a": ("IMAGE",),
+                "view_b": ("IMAGE",),
+                "view_c": ("IMAGE",),
+                "layout": ("FMM_LAYOUT",),
+                "ceiling": ("FLOAT", {
+                    "default": 0.03, "min": 0.005, "max": 0.2, "step": 0.005,
+                    "tooltip": "Drift above this fails the sheet. 0.01 is codec "
+                               "noise, 0.03 a tint you would notice, 0.07 a "
+                               "character that has changed colour.",
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("STRING", "BOOLEAN")
+    RETURN_NAMES = ("report", "passed")
+    FUNCTION = "run"
+    OUTPUT_NODE = True
+    CATEGORY = CATEGORY
+
+    def run(self, view_a, view_b, view_c, layout, ceiling):
+        doc = json.loads(layout)
+        bg = tuple(doc.get("background", (228, 228, 230)))
+        views = [p["view"] for p in doc.get("panels", [])][:3]
+        while len(views) < 3:
+            views.append("view" + str(len(views)))
+
+        rows, lines = [], []
+        for view, batch in zip(views, (view_a, view_b, view_c)):
+            palette = repair_mod.anchor_palette(to_pil(batch, 0), bg)
+            per_view = []
+            for i in range(batch.shape[0]):
+                row = repair_mod.assess_panel(to_pil(batch, i), palette, bg)
+                row.update(index=i, view=view)
+                per_view.append(row)
+            rows.extend(per_view)
+            s = repair_mod.summarise(per_view)
+            lines.append(view.ljust(6) + " mean " + format(s["drift_mean"], ".4f")
+                         + "   max " + format(s["drift_max"], ".4f"))
+
+        verdict = repair_mod.gate(repair_mod.summarise(rows), drift_ceiling=ceiling)
+        report = ("PASS" if verdict["pass"] else "FAIL") + "\n" + "\n".join(lines)
+        report += "\n" + "\n".join("- " + n for n in verdict["notes"])
+        return {"ui": {"text": [report]}, "result": (report, bool(verdict["pass"]))}
+
+
 NODE_CLASS_MAPPINGS = {
     "FMM_MotionPrompt": MotionPrompt,
+    "FMM_IdentityQA": IdentityQA,
     "FMM_TriptychCompose": TriptychCompose,
     "FMM_TriptychRegister": TriptychRegister,
     "FMM_SampleKeyframes": SampleKeyframes,
@@ -537,6 +612,7 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "FMM_MotionPrompt": "Motion Prompt",
+    "FMM_IdentityQA": "Identity QA",
     "FMM_TriptychCompose": "Triptych Compose",
     "FMM_TriptychRegister": "Triptych Register",
     "FMM_SampleKeyframes": "Sample Keyframes",
