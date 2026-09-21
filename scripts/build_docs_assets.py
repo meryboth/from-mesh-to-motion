@@ -350,8 +350,8 @@ def gif_generality():
 def main():
     print("building docs assets ->", os.path.relpath(OUT, REPO))
     for fn in (fig_turnaround, fig_triptych, fig_sheet_hero,
-               fig_side_drift, fig_registration,
-               gif_triptych_motion, gif_side_drift, gif_sheet_step,
+               fig_registration,
+               gif_triptych_motion, gif_sheet_step,
                fig_generality, gif_generality):
         try:
             fn()

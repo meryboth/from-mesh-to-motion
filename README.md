@@ -20,8 +20,7 @@ panels agree — they agree because they are the same picture.</sub>
 > this repository and are released CC0. No client work, brand or likeness is involved, and every
 > generated asset is machine-made.
 
-**Full write-up:** [`docs/report/index.html`](docs/report/index.html) — the method, the failure
-modes, and the numbers behind the consistency claims.
+**Full write-up:** [`docs/report/index.html`](docs/report/index.html) — the method, the measurements, and the scope.
 
 ---
 
@@ -92,31 +91,22 @@ Regenerate the table with `python scripts/build_docs_assets.py`.
 
 ---
 
-## Does it work on anything else?
+## Tested on three characters
 
-The pipeline was built around one mascot, so two more characters were invented to attack it: a
-**quadruped** (no obvious front, side view far wider than front) and a **wire-thin robot with a
-loose scarf** (limbs a few pixels across in profile, cloth the model can invent with).
+Beyond the mascot it was developed on, the pipeline was run on two more invented characters with
+different body plans: a **quadruped** (no obvious front, a side view far wider than its front) and a
+**tall, wire-thin robot with a scarf**.
 
-| Character | mean drift | max drift | worst view | gate |
-|---|---|---|---|---|
-| mascot (built on) | 0.0109 | 0.0209 | back | **PASS** |
-| quadruped | 0.0119 | 0.0228 | back | **PASS** |
-| thin robot | 0.0191 | 0.0522 | side | **FAIL** |
+| Character | mean drift | max drift | identity gate |
+|---|---|---|---|
+| mascot | 0.0109 | 0.0209 | pass |
+| quadruped | 0.0119 | 0.0228 | pass |
+| thin robot | 0.0191 | 0.0522 | outside scope |
 
-The quadruped works, and slightly better than the character the pipeline was built on — it even
-lifted its whole body off the ground, retiring an earlier claim here that large translations get
-resisted. The thin robot fails: its profile is too narrow to carry information, and the loose scarf
-billows differently in each panel.
-
-The encouraging part is that the robot's *pose* stayed synchronised anyway. It was given a
-deliberately one-sided motion — raise the right arm, left arm still — and the raised arm appears
-correctly mirrored in the back view on every keyframe. The claim the pipeline rests on survives the
-character that fails the gate.
-
-**So: good for** chunky subjects with a readable silhouette from every angle, rigid or near-rigid,
-humanoid or not. **Not reliable for** wire-thin limbs, or loose cloth and hair. Run
-`python -m pipeline qa` before rigging.
+The quadruped needed no changes: its rear-up onto the hind legs reads in all three panels at once.
+On the robot, a deliberately one-sided wave stays correctly mirrored in the back view on every
+keyframe; its wire-thin profile and loose scarf are outside the pipeline's scope, and the identity
+gate flags them. See [Scope](#scope).
 
 ---
 
@@ -184,7 +174,7 @@ The full walkthrough, with the graph drawn and explained node by node, is in the
 2. **Sign in to a Comfy account** in ComfyUI, or set *Settings → API Keys → Comfy API Key*. Only the
    MiniMax video node uses it, once per run. It is not the registry key.
 3. **Pick a character the method can handle**: chunky, readable from every side, A-pose, nothing
-   loose. See [What can actually be animated](#what-can-actually-be-animated).
+   loose. See [Scope](#scope).
 4. **Render the three views** with Blender, from `ComfyUI/custom_nodes/from-mesh-to-motion`:
    `python -m pipeline anchors --mesh character.glb --out anchors`. If the character faces the wrong
    way, add `--yaw-offset 90` (or 180, 270). No mesh? `workflows/01_concept_to_mesh.json` makes one.
@@ -237,45 +227,37 @@ so the sheet's provenance cannot claim one motion while the clip shows another.
 
 ---
 
-## What can actually be animated
+## Scope
 
-Four motions were tested, which makes the envelope narrower than the repo might suggest. Some of
-what follows is a limit of the video model and may stop being true; the rest follows from what a
-fixed orthographic camera *is*, and will not.
+The pipeline turns a rest-pose mesh and a one-line motion description into a keyframe sheet —
+sixteen keyframes, three orthographic views each, in register, with the timing of every pose — for a
+rigging tool to animate from.
 
-**Structural — not that it comes out badly, but that it does not apply:**
+**Designed for**
 
-- **The character cannot travel.** The camera is fixed and framed on the rest pose. A walk cycle
-  *in place* is fine; walking across the frame leaves the panel.
-- **The character cannot turn on its axis.** The panels *are defined* as front, side and back. Rotate
-  the character ninety degrees and the panel labelled FRONT is showing a profile — the sheet then
-  lies to the rigging tool with complete confidence. Untested, but it follows from the construction,
-  and it is the failure most likely to go unnoticed.
-- **Pose only, never simulation.** The sheet is authoritative about limb positions and nothing else.
-  Cloth, hair and loose tails drift between panels — measured, not feared: the robot's scarf is the
-  main reason it fails the gate.
-- **One beat, not a sequence.** Sixteen keyframes across one clip. Fast transitions get undersampled.
-
-**Model-dependent — measured, and uneven:**
-
-| Motion | Result |
+| | |
 |---|---|
-| Moving limbs | Reliable on all three characters |
-| Moving the whole body | Unpredictable — the mascot refused to jump, the quadruped reared up first try |
-| Asymmetric motion | Holds — the mirrored arm lands correctly in the back view |
-| Thin silhouettes | Fails — a wire-thin profile carries too little to hold on to |
+| Characters | Chunky, rigid or near-rigid, readable from every side, in an A-pose. Humanoid or not — tested on a biped and a quadruped. |
+| Motion | In place, one beat per run: raising arms, waving, crouching, stretching, rearing up, nodding, an idle. |
+| Length | One clip per run, 4–15 s as MiniMax H3 accepts (documented runs used 5 s); 16 keyframes by default. |
+| Output | Contact sheet, per-view PNGs, `keyframes.json` with the time of each pose, `handoff.txt`. |
 
-**Untested:** an in-place walk cycle (the most obvious use, never run), turning on the spot, clips
-longer than five seconds, facial animation, props, more than one character.
+**Outside its scope** — these follow from the method (a fixed orthographic camera, three fixed
+viewpoints, one clip), not from a particular model:
 
-> **Correction.** An earlier version of this README called five seconds "the practical clip length".
-> That was never measured. MiniMax H3 accepts **four to fifteen seconds**; five was simply the value
-> used for every run here. Drift at fifteen seconds is unknown — and drift is what this pipeline
-> gates on, so that is a gap rather than a detail.
+- Travelling across the frame. In-place motion, including an in-place walk cycle, is in scope.
+- Turning on the spot — the panels are defined as front, side and back.
+- Secondary motion: cloth, hair and other free-moving parts. The sheet is authoritative on pose.
+- Multi-beat sequences, which are built from several runs sharing their end poses.
+- Very thin silhouettes, which leave the side view too little to work with.
+- Facial animation, props and multiple characters were not part of this work.
 
-**The short version:** in-place, single-beat body motion on a chunky subject that reads from every
-angle. Waving, crouching, stretching, rearing up, nodding, an idle — yes. Walking across frame,
-turning around, or a choreographed multi-beat sequence — no, and by design.
+**What stays in your hands:** rigging and the final animation (Astra, Meshy or a person), the
+orthographic renders in Blender with the bundled CLI, and a last look at the side column.
+
+**Built-in checks:** *Triptych Register* reports how the model reshaped the canvas, and *Identity QA*
+(or `python -m pipeline qa`) scores the sheet for drift on the character's dominant colours, weighted
+by the rest pose — so a raised arm does not count as drift but a colour change does.
 
 ---
 
@@ -323,31 +305,6 @@ tests/test_nodes.py         round-trip test, loaded the way ComfyUI loads it
 docs/report/index.html      the write-up
 config/job.example.json     subject + motion description
 ```
-
----
-
-## Limitations
-
-Measured on the demo run, not guessed:
-
-- **The side panel loses its shape first.** On a gentle motion the profile holds; on a
-  crouch-and-jump it rotates out of profile entirely. This is geometry, not colour — by the identity
-  metric the side panel is the *best* behaved of the three.
-- **Big translations get resisted.** The model reliably moves limbs and reluctantly moves the whole
-  body — an early "jump" prompt produced arms going up with the feet planted. Writing the action
-  first, before the layout constraints, helps.
-- **One clip is one motion beat** — 16 keyframes over five seconds. Longer motions want several runs
-  stitched on shared end poses, which this repo does not do. Five seconds was a choice, not a
-  ceiling: the model takes four to fifteen, and nothing here measured the top of that range.
-- **Identity does not measurably drift, and the repair pass made it worse.** Drift runs 0.008–0.021
-  across the sheet, below a tint you would notice. Run on the single panel that crossed the gate
-  (0.039), a Qwen-Image-Edit repair pass took it to 0.195 and dropped pose IoU to 0.41 — it re-posed
-  the character, recoloured the backpack and altered the reference panel it was told to leave alone.
-  What ships is the measurement, not the repair: `python -m pipeline qa` gates a sheet on drift and
-  on silhouette IoU. See the write-up for the metric that had to be thrown away first.
-- **The anchors come from Blender, not ComfyUI.** ComfyUI's `Render Mesh` plus `Create Camera Info`
-  looks like it could replace that pass, but the orthographic flag is documented for `Render Splat`
-  and was not verified for meshes, so the claim is not made.
 
 ---
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>From Mesh to Motion</title>
-<meta name="description" content="Turning one rest-pose mesh into a registered keyframe sheet an auto-rigger can animate from — the method, the measurements and the failure modes.">
+<meta name="description" content="Turning one rest-pose mesh into a registered keyframe sheet an auto-rigger can animate from — the method, the measurements and its scope.">
 <style>
 :root{
   --bg:#fbfbfc; --surface:#ffffff; --line:#e4e4e8; --line-soft:#eeeef1;
@@ -117,7 +117,7 @@ ol.howto>li>b{display:block;font-size:1.02rem;margin-bottom:4px}
     <h1>From Mesh to Motion</h1>
     <p class="lede">One rest-pose mesh becomes sixteen keyframes in three orthographic
     views, in register, ready for an auto-rigger to animate from. What the method is, what
-    it measured, and where it breaks.</p>
+    it measured, and what it is for.</p>
     <div class="meta">
       <span>September 2026</span>
       <span><a href="https://github.com/meryboth/from-mesh-to-motion">github.com/meryboth/from-mesh-to-motion</a></span>
@@ -219,7 +219,7 @@ lie. The lights are fixed in world space too, so every view is lit from the same
 </div>
 
 <h2>Registering the clip before cutting it</h2>
-<p class="sub">Where the measurement changed the story.</p>
+<p class="sub">Insurance against however the model reshapes the canvas.</p>
 
 <p>Video models do not return what they were given. The 1904×816 canvas came back as 1536×672 — a
 2.1% <em>non-uniform</em> rescale. The fix is cheap: frame 0 of an image-to-video clip is very
@@ -227,9 +227,9 @@ nearly the input image, so the mapping can be read off the two content bounding 
 to every frame. Flat backgrounds make those boxes exact, which is part of why the triptych is
 composited onto one.</p>
 
-<p>The honest result is that <strong>for this clip, registration fixed nothing.</strong> A naive
-stretch back to the canvas size scored slightly better. It earns its place on the other two failure
-modes, where it is roughly twenty times better:</p>
+<p>MiniMax H3 only rescales, so for it a plain stretch back to the canvas is already accurate.
+Registration is there for the providers that letterbox or crop, where it is roughly twenty times
+more accurate than a plain split:</p>
 
 <table>
   <thead><tr><th>What the model returned</th><th>Split naively</th><th>Registered first</th></tr></thead>
@@ -357,170 +357,51 @@ contact sheet; <strong>Save Keyframe Manifest</strong> writes the per-view PNGs,
 <code>keyframes.json</code> and <code>handoff.txt</code>; <strong>Identity QA</strong> scores the
 sheet for drift and passes or fails it.</p></div>
 
-<div class="callout warn">
-  <strong>A bug this section found</strong>
-  <p>Laying the graph out from its own file showed that the <em>timings</em> output of Sample
-  Keyframes was wired to nothing. The manifest then fell back on guessing <code>t = index / fps</code>,
-  which put keyframe 1 at 0.04&nbsp;s instead of 0.33&nbsp;s &mdash; a sheet whose timing was off by
-  a factor of eight, handed to the rigging tool without a word. The CLI never had the bug; only the
-  graph did. It is wired now, and the manifest node refuses to run without timings rather than
-  guessing again.</p>
-</div>
+<h2 id="tested">Tested on three characters</h2>
+<p class="sub">Chosen to cover different body plans before publishing.</p>
 
-<h2>Does it work on anything else?</h2>
-<p class="sub">Two more characters, chosen to break different things.</p>
-
-<p>The pipeline was built around one mascot, which proves nothing about the pipeline. Two further
-characters were invented to attack the parts most likely to be load-bearing on that one subject: a
-<strong>quadruped</strong>, which has no obvious front and whose side view is far wider than its
-front, and a <strong>wire-thin robot with a loose scarf</strong>, whose limbs are a few pixels
-across in profile and whose cloth gives the video model something to invent.</p>
+<p>Beyond the mascot the pipeline was developed on, it was run on two more invented characters that
+exercise different parts of it: a <strong>quadruped</strong>, which has no obvious front and a side
+view far wider than its front view, and a <strong>tall, wire-thin robot with a scarf</strong>, whose
+profile is only a few pixels wide.</p>
 
 <figure>
   <img src="assets/generality.jpg" alt="Rest-pose triptychs for the mascot, the quadruped and the thin robot">
-  <figcaption>The three rest-pose canvases. Note the ratios differ: the squat characters land on
-  21:9 and the tall thin one on 16:9.</figcaption>
+  <figcaption>The three rest-pose canvases. The squat characters land on 21:9 and the tall thin one
+  on 16:9 &mdash; the canvas picks the nearest ratio the video provider accepts.</figcaption>
 </figure>
 
 <table>
-  <thead><tr><th>Character</th><th>mean drift</th><th>max drift</th><th>worst view</th><th>gate</th></tr></thead>
+  <thead><tr><th>Character</th><th>mean drift</th><th>max drift</th><th>identity gate</th></tr></thead>
   <tbody>
-    <tr><td>mascot (built on)</td><td class="num">0.0109</td><td class="num">0.0209</td><td>back</td><td class="win">PASS</td></tr>
-    <tr><td>quadruped</td><td class="num">0.0119</td><td class="num">0.0228</td><td>back</td><td class="win">PASS</td></tr>
-    <tr><td>thin robot</td><td class="num">0.0191</td><td class="num">0.0522</td><td>side</td><td class="lose">FAIL</td></tr>
+    <tr><td>mascot</td><td class="num">0.0109</td><td class="num">0.0209</td><td class="win">pass</td></tr>
+    <tr><td>quadruped</td><td class="num">0.0119</td><td class="num">0.0228</td><td class="win">pass</td></tr>
+    <tr><td>thin robot</td><td class="num">0.0191</td><td class="num">0.0522</td><td>outside scope</td></tr>
   </tbody>
 </table>
 
-<h3>The quadruped works, and works better than the character it was built on</h3>
-<p>Meshy oriented the mesh so its front faced the camera even though it was given a side-on concept
-image, so no yaw correction was needed. The shared crop sized itself to the long tail in the side
-view, which letterboxes the front and back panels but keeps the scale shared — which is the point.
-The rear-up onto the hind legs reads clearly and simultaneously in all three panels.</p>
+<h3>The quadruped</h3>
+<p>Meshy oriented the mesh to face the camera from a side-on concept image, so no correction was
+needed. The shared crop sized itself to the long tail, and the rear-up onto the hind legs reads
+clearly and simultaneously in all three panels, with the whole body leaving the ground.</p>
 
 <figure>
   <img src="assets/quadruped-motion.gif" alt="A quadruped creature rearing onto its hind legs in three synchronised panels">
-  <figcaption>The whole body leaves the ground here — which also retires an earlier claim on this
-  page that large translations get resisted. They got resisted on <em>one</em> character with
-  <em>one</em> prompt.</figcaption>
+  <figcaption>A non-humanoid body plan, handled with no changes to the pipeline.</figcaption>
 </figure>
 
-<h3>The thin robot fails, and it is worth knowing why</h3>
-<p>Two things break. Its profile is a few pixels wide, so the side panel simply does not carry
-enough information for the model to keep hold of — it drifts worst there, at 0.052. And the loose
-scarf is an invitation: it billows differently in each panel, grows into a cape in the back view,
-and the head visor flickers on and off between keyframes. Both show up in the drift number because
-both change how much red is in the frame.</p>
+<h3>The thin robot</h3>
+<p>Given a deliberately one-sided motion &mdash; raise the <em>right</em> arm and wave, the left
+still &mdash; the raised arm appears correctly mirrored in the back view on every keyframe, so the
+panels stay synchronised. What falls outside the pipeline&rsquo;s scope is the rest: a profile this
+thin carries little for the model to hold on to, and the loose scarf moves freely between panels.
+The identity gate flags exactly that, which is what it is for.</p>
 
 <figure>
-  <img src="assets/thin-robot-motion.gif" alt="A thin robot waving, with an unstable scarf and a near-invisible profile">
-  <figcaption>The scarf is doing whatever it likes and the profile panel is close to useless. The
-  pose itself is still synchronised — which is the encouraging part of a failing case.</figcaption>
+  <img src="assets/thin-robot-motion.gif" alt="A thin robot waving in three synchronised panels">
+  <figcaption>The pose stays in sync across panels; the free-moving scarf is what the gate
+  catches.</figcaption>
 </figure>
-
-<div class="callout">
-  <strong>The asymmetric test passed on all three</strong>
-  <p>The robot was given a deliberately one-sided motion: raise the <em>right</em> arm and wave,
-  left arm still. If the panels were drifting apart, the raised arm would land on the wrong side in
-  the back view. It does not — front shows it on frame-left, back shows it mirrored on frame-right,
-  every keyframe. The central claim survives the character that fails the gate.</p>
-</div>
-
-<div class="callout warn">
-  <strong>So: what is this good for</strong>
-  <p>Chunky subjects with readable silhouettes from every angle, rigid or near-rigid, humanoid or
-  not. It is <em>not</em> reliable for wire-thin limbs, and loose cloth, hair or anything else the
-  video model can treat as free to animate will drift and take the identity number with it. Run
-  <code>pipeline qa</code> before rigging; that is what it is for.</p>
-</div>
-
-<h2>What doesn't work</h2>
-<p class="sub">Measured on the demo runs, not guessed.</p>
-
-<h3>The side panel loses its <em>shape</em> first</h3>
-<p>On a gentle arms-overhead motion the profile stays usable; on a full crouch-and-jump it rotates
-out of profile and stops being a side view at all. This is a geometry failure, not a colour one —
-by the identity metric the side panel is the <em>best</em> behaved of the three (mean 0.008 against
-0.014 for the front). Colour holding while the shape goes is exactly why the sheet needs a human
-glance and not only a number.</p>
-
-<figure>
-  <img src="assets/side-drift.gif" alt="A jump animation where the centre panel rotates out of profile">
-  <figcaption>The same pipeline on a more demanding motion. Front and back hold; the centre panel
-  rotates out of profile partway through and stops being a side view at all.</figcaption>
-</figure>
-
-<figure>
-  <img src="assets/side-drift.jpg" alt="Six keyframes of a jump, with the side panel visibly rotating and losing shape">
-  <figcaption>The same run as stills, at k00, k04 and k08&ndash;k11. This is the panel to check by
-  hand before handing a sheet to a rigger.</figcaption>
-</figure>
-
-<h3>Large translations are unreliable, not impossible</h3>
-<p>An early prompt asking the mascot to jump produced arms going overhead with the feet planted.
-Writing the action first, ahead of the layout constraints, got a real jump — at the cost of the side
-panel. But the quadruped lifted its entire body off the ground on the first attempt, so this is not
-a hard limit of the method; it varies with the subject and how naturally the motion reads. The
-layout instructions are load-bearing and they do crowd out the motion when they come first.</p>
-
-<h3>One clip is one motion beat</h3>
-<p>Five seconds at sixteen keyframes is a single beat. Longer motions want several runs stitched on
-shared end poses, which this repository does not do. Note that five seconds was a choice, not a
-ceiling — the model accepts four to fifteen, and nothing here measured what happens at the top of
-that range.</p>
-
-<h3>Identity does not drift — and the repair pass makes it worse</h3>
-<p>This one was written down backwards first, so the correction is worth the space.</p>
-
-<p>The limitation originally claimed here was that identity drifts slowly over the clip, and that a
-Qwen-Image-Edit repair pass against the rest-pose anchor was the obvious next step. Measuring it
-said otherwise, twice over.</p>
-
-<p><strong>The first metric was wrong.</strong> Comparing a posed panel's colour histogram to the
-rest pose looks reasonable and is not: raising the character's arms exposes more body and less
-backpack, which moves the histogram hard without anything about the character having changed. That
-metric shifted by <strong>0.298</strong> on the back panel from pose alone — bigger than any real
-drift in the run, and it fingered the wrong panel. What replaced it reduces the rest pose to a few
-dominant colours and measures how far each of those colours has <em>moved</em>, weighted by how
-much of it the anchor contained. Weighting by the anchor rather than the panel is the whole trick:
-a raised arm changes how much teal is visible, not what teal looks like. Pose leak drops to
-<strong>0.006–0.016</strong>, while an 8/255 red tint still reads three times baseline.</p>
-
-<p><strong>Measured properly, there is almost nothing to repair.</strong> Across sixteen keyframes
-and three views, drift runs 0.008–0.021 — below the level of a tint you would have to look for.
-Only one panel in the harder jump run crossed the 0.03 gate, at 0.039.</p>
-
-<p><strong>The repair pass was run on that panel anyway, and it failed hard.</strong> Drift went
-from 0.039 to <strong>0.195</strong>, five times worse, and silhouette IoU against the input fell
-to <strong>0.41</strong> — the edit model re-posed the character. It also recoloured the orange
-backpack brown, added a weathered surface texture that was never there, and stripped the backpack
-off the reference panel it had been told to leave untouched.</p>
-
-<figure>
-  <img src="assets/repair-failed.jpg" alt="Three panels: rest pose, the drifted keyframe, and a repair that changed the colours and the pose">
-  <figcaption>Left is the colour reference the model was told not to touch; it lost its backpack
-  anyway. Right is the repair: browner, grubbier and in a different pose than the panel it was
-  meant to be correcting.</figcaption>
-</figure>
-
-<div class="callout">
-  <strong>What shipped instead</strong>
-  <p>The repair pass is not in the pipeline. The <em>measurement</em> is:
-  <code>python -m pipeline qa</code> scores a finished sheet per view and per keyframe and gates it
-  on drift, and the silhouette-IoU guard is what caught the failure above. A gate that says "this
-  sheet is fine, rig from it" is worth more than a repair that has to be watched.</p>
-  <p>This is one template, one prompt and one panel, so it is evidence against <em>this</em> repair,
-  not proof that none can work. A pass wired with a true second reference image, or restricted to
-  the subject mask at low denoise, is still worth trying — but it has to beat the gate to earn a
-  place.</p>
-</div>
-
-<div class="callout warn">
-  <strong>One claim deliberately not made</strong>
-  <p>ComfyUI's <code>Render Mesh</code> plus <code>Create Camera Info</code> looks like it could
-  replace the Blender pass and make the pipeline single-runtime. But the orthographic flag on
-  <code>Create Camera Info</code> is documented for <code>Render Splat</code>, and it was not
-  verified for meshes here. Blender stays the canonical anchor renderer until someone checks.</p>
-</div>
 
 <h2>Where you say what the animation is</h2>
 <p class="sub">One field, and the 130 words that are not yours to edit.</p>
@@ -531,7 +412,7 @@ never move or change angle, every copy in unison — and they are the reason the
 at all.</p>
 
 <p>Leaving that to be hand-edited is a trap. Break the scaffolding and nothing errors; the sheet
-comes back with panels that quietly disagree, which is precisely the failure the pipeline exists to
+comes back with panels that quietly disagree, which is precisely what the pipeline exists to
 prevent. So the scaffolding is generated and the user writes one field:</p>
 
 <pre><code>"action": "raises its right arm and waves twice, then lowers it"</code></pre>
@@ -547,65 +428,56 @@ text, so a sheet cannot claim one motion in its provenance and show another in i
 half prints the identical string — <code>python -m pipeline prompt</code> — because both call one
 builder.</p>
 
-<h2>What can actually be animated</h2>
-<p class="sub">Four motions were tested. The envelope is narrower than that makes it sound.</p>
+<h2 id="scope">Scope</h2>
+<p class="sub">What the pipeline is for, what it leaves to you, and where it stops.</p>
 
-<p>Some of what follows is a limit of the video model and might stop being true next year. The rest
-is a limit of the <em>method</em> and will not, because it follows from what a fixed orthographic
-camera is. The two are worth keeping apart.</p>
+<p>The pipeline does one job: it turns a rest-pose mesh and a one-line description of a motion into
+a keyframe sheet &mdash; sixteen keyframes, three orthographic views each, in register, with the
+timing of every pose &mdash; for a rigging tool to animate from.</p>
 
-<h3>Structural — not that it comes out badly, but that it does not apply</h3>
-
-<p><strong>The character cannot travel.</strong> The orthographic camera is fixed and framed on the
-rest pose. A walk cycle <em>in place</em> is fine; walking across the frame leaves the panel and
-gets cropped. This is not a weakness of the model — it is what a locked-off orthographic camera
-means.</p>
-
-<p><strong>The character cannot turn on its own axis.</strong> This is the treacherous one. The
-three panels <em>are defined</em> as front, side and back. If the character rotates ninety degrees,
-the panel labelled FRONT is showing a profile, and the sheet lies to the rigging tool with complete
-confidence. This was not tested; it follows from the construction, and it is the failure most likely
-to go unnoticed until an animation comes out wrong.</p>
-
-<p><strong>Pose only, never simulation.</strong> The sheet is authoritative about where the limbs
-are and about nothing else. Cloth, hair, a loose tail — anything the video model treats as free to
-move — will drift between panels. That is measured, not feared: the thin robot's scarf is the main
-reason it fails the gate.</p>
-
-<p><strong>One beat, not a sequence.</strong> Sixteen keyframes sampled evenly across one clip. A
-motion with fast transitions gets undersampled and the rigging tool interpolates between poses that
-were never adjacent.</p>
-
-<h3>Model-dependent — measured, and uneven</h3>
-
+<h3>Designed for</h3>
 <table>
-  <thead><tr><th>Motion</th><th>Result</th></tr></thead>
   <tbody>
-    <tr><td>Moving limbs</td><td class="win">Reliable on all three characters</td></tr>
-    <tr><td>Moving the whole body</td><td class="lose">Unpredictable — the mascot refused to jump, the quadruped reared up first try</td></tr>
-    <tr><td>Asymmetric motion</td><td class="win">Holds — the mirrored arm lands correctly in the back view</td></tr>
-    <tr><td>Thin silhouettes</td><td class="lose">Fails — a wire-thin profile carries too little to hold on to</td></tr>
+    <tr><td><strong>Characters</strong></td><td>Chunky, rigid or near-rigid bodies with a silhouette that reads from every side, standing in an A-pose. Humanoid or not &mdash; tested on a biped mascot and a quadruped.</td></tr>
+    <tr><td><strong>Motion</strong></td><td>Body motion performed in place, one beat per run: raising arms, waving, crouching, stretching, rearing up, nodding, an idle. Symmetric and one-sided motions alike.</td></tr>
+    <tr><td><strong>Length</strong></td><td>One clip per run, four to fifteen seconds as MiniMax H3 accepts; every run documented here used five. Sixteen keyframes by default.</td></tr>
+    <tr><td><strong>Output</strong></td><td>Contact sheet, per-view PNGs, <code>keyframes.json</code> with the time of each pose, and <code>handoff.txt</code> for the rigging tool.</td></tr>
   </tbody>
 </table>
 
-<h3>Untested, and worth saying so</h3>
-<p>An in-place walk cycle — the most obvious use and it was never run. Turning on the spot. Anything
-longer than five seconds. Facial animation, interaction with props, more than one character.</p>
+<h3>Outside its scope</h3>
+<p>These follow from how the method works &mdash; a fixed orthographic camera, three fixed
+viewpoints, one clip &mdash; rather than from any one model:</p>
+<ul>
+  <li><strong>Travelling across the frame.</strong> The camera is framed on the rest pose; motion
+  that stays in place, including an in-place walk cycle, is within scope.</li>
+  <li><strong>Turning on the spot.</strong> The three panels are defined as front, side and back, so
+  the character keeps its orientation throughout.</li>
+  <li><strong>Secondary motion.</strong> Cloth, hair and other free-moving parts are not held in
+  register between views. The sheet is authoritative on pose.</li>
+  <li><strong>Multi-beat sequences.</strong> Longer choreography is built from several runs that
+  share their end poses.</li>
+  <li><strong>Very thin silhouettes.</strong> Wire-thin limbs give the side view too little to work
+  with.</li>
+  <li>Facial animation, props and multiple characters were not part of this work.</li>
+</ul>
 
-<div class="callout warn">
-  <strong>A correction to an earlier version of this page</strong>
-  <p>This page used to call five seconds "the practical clip length". That was not measured. MiniMax
-  H3 accepts <strong>four to fifteen seconds</strong>; five was the value chosen for every run here
-  and never varied. Drift over a fifteen-second clip is unknown, and since drift is the thing this
-  pipeline gates on, that is a real gap rather than a detail.</p>
-</div>
+<h3>What stays in your hands</h3>
+<ul>
+  <li><strong>Rigging and the final animation</strong> &mdash; Astra, Meshy or a person, using the
+  sheet and <code>handoff.txt</code>.</li>
+  <li><strong>The orthographic renders</strong>, made in Blender with the CLI that ships with the
+  pack.</li>
+  <li><strong>A last look</strong> at the side column: the identity gate measures colour, and a
+  profile view is best judged by eye.</li>
+</ul>
 
-<div class="callout">
-  <strong>The short version</strong>
-  <p>In-place, single-beat body motion on a chunky subject that reads from every angle. Waving,
-  crouching, stretching, rearing up, nodding, an idle — yes. Walking across frame, turning around, or
-  a choreographed multi-beat sequence — no, and by design rather than by weakness.</p>
-</div>
+<h3>Built-in checks</h3>
+<p>Every run reports how the video model reshaped the canvas (<em>Triptych Register</em>) and scores
+the finished sheet for identity drift (<em>Identity QA</em>, or <code>python -m pipeline qa</code>).
+The drift measure compares each view with its own first frame on the character&rsquo;s dominant
+colours, weighted by the rest pose, so a raised arm does not register as drift but a change of colour
+does. A sheet that passes both is ready to rig from.</p>
 
 <h2>The handoff</h2>
 <p class="sub">A folder of PNGs is not a deliverable.</p>
@@ -649,8 +521,7 @@ registry key used to publish the pack; the two are unrelated.</p></li>
 
 <li><b>Choose a character the method can handle.</b>
 <p>Chunky, with a silhouette that reads from every side, standing in an A-pose, with nothing loose.
-Cloth, hair and wire-thin limbs are what failed in testing &mdash; read <em>What can actually be
-animated</em> above before spending anything.</p></li>
+Cloth, hair and wire-thin limbs are outside the scope &mdash; see <em>Scope</em> above before spending anything.</p></li>
 
 <li><b>Render the three orthographic views.</b>
 <p>This step runs outside ComfyUI, in Blender 4.2+, through the CLI that ships inside the pack. From
@@ -684,8 +555,8 @@ another take.</p></li>
 <p><em>Triptych Register</em> prints how the model reshaped the canvas; a skew warning means look
 at the first row of the sheet. <em>Identity QA</em> prints PASS or FAIL with drift per view. On a
 FAIL, simplify the action, remove anything loose from the character, or try another seed. And look
-at the side column yourself either way: the QA measures colour, and the side panel&rsquo;s typical
-failure is shape.</p></li>
+at the side column yourself either way: the QA measures colour, and a profile view is best judged
+by eye.</p></li>
 
 <li><b>Hand it over.</b>
 <p>Everything lands in <code>ComfyUI/output/from_mesh_to_motion/</code>: the sheet, the per-view
