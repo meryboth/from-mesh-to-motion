@@ -1,7 +1,7 @@
 [project]
 name = "from-mesh-to-motion"
 description = "One rest-pose mesh to a registered keyframe sheet an auto-rigger can animate from."
-version = "0.1.0"
+version = "0.1.1"
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10"
