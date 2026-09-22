@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>From Mesh to Motion Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f3f4f2; --surface:#fbfbfa; --ink:#1b1e22; --ink-2:#4a5058; --ink-3:#747b84;
+  --rule:#d6d9d6; --rule-soft:#e6e8e5; --code:#eceeeb;
+  --ours:#1f7a80; --ours-soft:#e3f0f0; --paid:#c4561f; --paid-soft:#f8e8de;
+  --ok:#2f7a45; --ok-soft:#e2f0e6; --out:#8a6a1a; --out-soft:#f4ecd6;
+  --v0:#1f7a80; --v1:#7d8f3a; --v2:#c4561f;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#15181b; --surface:#1b1f23; --ink:#e7e9ea; --ink-2:#b3b9bf; --ink-3:#8a9199;
+  --rule:#2f353b; --rule-soft:#262b30; --code:#20252a;
+  --ours:#57b6bb; --ours-soft:#17292b; --paid:#ef8a52; --paid-soft:#2c1e16;
+  --ok:#6cc488; --ok-soft:#162619; --out:#d9b35a; --out-soft:#2a2414;
+  --v0:#57b6bb; --v1:#a9bb5f; --v2:#ef8a52;
+}}
+:root[data-theme="dark"]{
+  --paper:#15181b; --surface:#1b1f23; --ink:#e7e9ea; --ink-2:#b3b9bf; --ink-3:#8a9199;
+  --rule:#2f353b; --rule-soft:#262b30; --code:#20252a;
+  --ours:#57b6bb; --ours-soft:#17292b; --paid:#ef8a52; --paid-soft:#2c1e16;
+  --ok:#6cc488; --ok-soft:#162619; --out:#d9b35a; --out-soft:#2a2414;
+  --v0:#57b6bb; --v1:#a9bb5f; --v2:#ef8a52;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;margin:0;padding-inline:20px;padding-block:0 64px}
+.page{max-width:1120px;margin:0 auto}
+a{color:var(--ours);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--ours);outline-offset:2px}
+h1,h2,h3,.kicker,.toc-h,dt,.stage,.fact-n,th{font-family:var(--display)}
+h1{font-size:clamp(2.4rem,6vw,3.6rem);line-height:1;margin:6px 0 14px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:1.9rem;font-weight:700;margin:0 0 12px;letter-spacing:.005em;text-wrap:balance}
+h3{font-size:1.3rem;font-weight:600;margin:30px 0 8px;letter-spacing:.01em}
+h3 code,h2 code{font-family:var(--mono);font-size:.85em}
+h4{font:600 .78rem/1 var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin:0 0 6px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;overflow-x:auto;
+  font-family:var(--mono);font-size:.8rem;line-height:1.55;margin:0 0 18px}
+pre code{background:none;padding:0}
+pre.prose{white-space:pre-wrap}
+pre.formula{background:var(--ours-soft);border-color:transparent;border-left:3px solid var(--ours)}
+.sheet-head{padding-block:48px 28px;border-bottom:2px solid var(--ink)}
+.kicker{font-size:.9rem;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--ours);margin:0}
+.lede{font-size:1.08rem;color:var(--ink-2);max-width:70ch;margin-bottom:26px}
+.titleblock{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:0;
+  border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
+.titleblock div{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:7px 10px 8px;min-width:0}
+.titleblock dt{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3)}
+.titleblock dd{margin:1px 0 0;font-family:var(--mono);font-size:.84rem;overflow-wrap:anywhere}
+.shell{display:grid;grid-template-columns:1fr;gap:28px;margin-top:32px}
+@media (min-width:1000px){.shell{grid-template-columns:180px minmax(0,1fr)}
+  .toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start}}
+.toc-h{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:0 0 8px}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
+@media (min-width:1000px){.toc ol{display:block}.toc li{margin:0 0 5px}}
+.toc a{color:var(--ink-2);text-decoration:none;font-size:.9rem}
+.toc a:hover{color:var(--ours)}
+main{min-width:0}
+section{padding-block:30px 26px;border-top:1px solid var(--rule)}
+section:first-child{border-top:0;padding-top:0}
+figure{margin:18px 0 22px}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+figcaption{font-size:.84rem;color:var(--ink-3);margin-top:7px;max-width:70ch}
+.tbl{overflow-x:auto;margin:0 0 18px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);text-align:left;
+  padding:7px 10px;border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.ty{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);white-space:nowrap}
+td.paid{color:var(--paid);font-weight:500}
+.opt{font-size:.72rem;color:var(--ink-3);font-style:italic}
+.opt.req{color:var(--paid);font-style:normal}
+.def{font-family:var(--mono);font-size:.8rem;background:var(--code);padding:.05em .35em;border-radius:3px}
+.tip{color:var(--ink-3);font-size:.8rem;margin-top:3px;max-width:52ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:6px 0 4px}
+.facts div{background:var(--surface);padding:14px 16px;display:flex;gap:12px;align-items:baseline}
+.fact-n{font-size:2.2rem;font-weight:700;color:var(--ours);line-height:1}
+.fact-l{font-size:.86rem;color:var(--ink-2)}
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px}
+.graph{width:100%;min-width:560px;height:auto;display:block;font-family:var(--sans)}
+.graph .g-edge{fill:none;stroke:var(--ink-3);stroke-width:1.4;opacity:.8}
+.graph .g-edge.layout{stroke:var(--ours);opacity:1}
+.graph .g-arrow{fill:var(--ink-3)}
+.graph .g-mult{font-size:11px;fill:var(--ink-3)}
+.graph .g-node rect{fill:var(--paper);stroke:var(--rule);stroke-width:1.2}
+.graph .g-node.ours rect{fill:var(--ours-soft);stroke:var(--ours)}
+.graph .g-node.cloud rect{fill:var(--paid-soft);stroke:var(--paid)}
+.graph .g-node.save rect{stroke-dasharray:4 3}
+.graph .g-name{font-size:13px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.graph .g-sub{font-size:11px;fill:var(--ink-2);text-anchor:middle}
+.legend{list-style:none;padding:0;margin:10px 0 6px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.82rem;color:var(--ink-3)}
+.legend li::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;
+  vertical-align:-1px;border:1px solid var(--rule);background:var(--paper)}
+.legend .l-ours::before{background:var(--ours-soft);border-color:var(--ours)}
+.legend .l-paid::before{background:var(--paid-soft);border-color:var(--paid)}
+.legend .l-save::before{border-style:dashed}
+.legend .l-layout::before{height:0;border:0;border-top:2px solid var(--ours);border-radius:0;vertical-align:3px}
+.legend .v0::before{background:var(--v0);border:0}.legend .v1::before{background:var(--v1);border:0}
+.legend .v2::before{background:var(--v2);border:0}
+.note{font-size:.84rem;color:var(--ink-3)}
+.node{border-top:1px solid var(--rule);padding-block:18px 6px}
+.node-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:8px}
+.node-h h3{margin:0}
+.node-h code{font-size:.78rem;color:var(--ink-3)}
+.stage{font-size:.74rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ours);
+  border:1px solid var(--ours);border-radius:3px;padding:1px 6px}
+.stage.out{color:var(--ink-3);border-color:var(--rule)}
+.rule{font-size:.9rem;color:var(--ink-2)}
+.rule span{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);margin-right:8px}
+.io{display:grid;grid-template-columns:1fr;gap:4px 24px}
+@media (min-width:760px){.io{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}}
+.chart-fig{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 8px}
+.chart{width:100%;height:auto;display:block;font-family:var(--sans)}
+.chart .grid{stroke:var(--rule-soft);stroke-width:1}
+.chart .tick{font-size:10.5px;fill:var(--ink-3);text-anchor:end;font-family:var(--mono)}
+.chart .val{font-size:10px;fill:var(--ink-2);text-anchor:middle;font-family:var(--mono)}
+.chart .grp{font-size:12.5px;fill:var(--ink);text-anchor:middle;font-weight:600}
+.chart .bar.v0{fill:var(--v0)}.chart .bar.v1{fill:var(--v1)}.chart .bar.v2{fill:var(--v2)}
+.chart .ceil{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4}
+.chart .ceil-l{font-size:10.5px;fill:var(--ink);text-anchor:start;font-family:var(--mono)}
+.chart-legend{margin-top:-8px}
+.pill{font-size:.76rem;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.out{background:var(--out-soft);color:var(--out)}
+.result{border-top:1px solid var(--rule);padding-top:6px;margin-top:22px}
+.result .body{color:var(--ink-2);font-size:.92rem}
+.pair{display:grid;grid-template-columns:1fr;gap:0 18px}
+@media (min-width:760px){.pair{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}}
+table.mini{max-width:420px}
+.scope{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:4px 26px}
+.scope h3{margin-top:10px}
+.scope ul,.steps{padding-left:1.2em;margin:0}
+.scope li,.steps li{margin:0 0 8px}
+.steps{max-width:70ch}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+<div class="page">
+<header class="sheet-head">
+<p class="kicker">Technical reference</p>
+<h1>From Mesh to Motion</h1>
+<p class="lede">A rest-pose mesh and a one-line description of a motion in; a keyframe sheet out &mdash; sixteen keyframes, three orthographic views each, in register, with the time of every pose &mdash; for a rigging tool to animate from. Architecture, node contracts, data formats, metrics and measured results.</p>
+<dl class="titleblock"><div><dt>Pack</dt><dd>from-mesh-to-motion</dd></div><div><dt>Version</dt><dd>0.1.1</dd></div><div><dt>Pack nodes</dt><dd>8</dd></div><div><dt>Graph nodes</dt><dd>17</dd></div><div><dt>Views</dt><dd>front · side · back</dd></div><div><dt>Projection</dt><dd>orthographic</dd></div><div><dt>Keyframes / run</dt><dd>16</dd></div><div><dt>Characters tested</dt><dd>3</dd></div><div><dt>Package</dt><dd>161 KB</dd></div><div><dt>Registry</dt><dd><a href="https://registry.comfy.org/nodes/from-mesh-to-motion">@meryboth</a></dd></div><div><dt>Source</dt><dd><a href="https://github.com/meryboth/from-mesh-to-motion">GitHub</a></dd></div><div><dt>Issued</dt><dd>2026-09-22</dd></div></dl>
+</header>
+<div class="shell">
+<nav class="toc" aria-label="Contents"><p class="toc-h">Contents</p><ol><li><a href="#overview">Overview</a></li><li><a href="#pipeline">Pipeline</a></li><li><a href="#graph">ComfyUI graph</a></li><li><a href="#nodes">Nodes</a></li><li><a href="#cli">Command line</a></li><li><a href="#data">Data formats</a></li><li><a href="#metrics">Metrics</a></li><li><a href="#results">Results</a></li><li><a href="#scope">Scope</a></li><li><a href="#usage">Usage</a></li><li><a href="#package">Package</a></li></ol></nav>
+<main>
+<section id="overview"><h2>Overview</h2>
+<p>An auto-rigger can read motion off pictures instead of guessing it from a sentence, if the pictures agree with each other. This pipeline produces pictures that agree. Its central move is that no view is ever generated alone: the three orthographic renders are placed on one canvas, and a video model animates that single image, so the three views move inside one frame and stay synchronised by construction.</p>
+<figure><img src="assets/triptych-motion.gif" alt="Three orthographic panels of a mascot animating together" loading="lazy"><figcaption>The animated canvas for the mascot. The three panels are one image to the video model.</figcaption></figure>
+<div class="facts"><div><span class="fact-n">3</span><span class="fact-l">views per keyframe, one shared scale and pivot</span></div><div><span class="fact-n">16</span><span class="fact-l">keyframes per run, each with its frame index and time</span></div><div><span class="fact-n">1</span><span class="fact-l">remote, paid call per run; every other step is local</span></div></div>
+</section>
+<section id="pipeline"><h2>Pipeline</h2>
+<p>Seven stages. Geometry is handled locally and deterministically; the only generative step is the animation.</p>
+<div class="tbl"><table><thead><tr><th>Stage</th><th>Runs</th><th>Input</th><th>Output</th><th>Component</th></tr></thead><tbody>
+<tr><td><strong>Mesh</strong></td><td>Cloud · optional</td><td>Concept image</td><td>Textured A-pose GLB</td><td>workflows/01_concept_to_mesh.json (Meshy 7)</td></tr>
+<tr><td><strong>Anchors</strong></td><td>Local · Blender</td><td>GLB</td><td>beauty_front / side / back.png</td><td>python -m pipeline anchors</td></tr>
+<tr><td><strong>Compose</strong></td><td>Local</td><td>Three renders</td><td>Canvas + layout JSON</td><td>Triptych Compose</td></tr>
+<tr><td><strong>Prompt</strong></td><td>Local</td><td>One-line action + layout</td><td>Full video prompt + summary</td><td>Motion Prompt</td></tr>
+<tr><td><strong>Animate</strong></td><td class="paid">Cloud · paid</td><td>Canvas + prompt</td><td>Video clip</td><td>MiniMax H3</td></tr>
+<tr><td><strong>Register & sample</strong></td><td>Local</td><td>Clip + canvas</td><td>Corrected layout, 16 frames with times</td><td>Triptych Register, Sample Keyframes</td></tr>
+<tr><td><strong>Split & deliver</strong></td><td>Local</td><td>Frames + layout</td><td>Sheet, per-view PNGs, keyframes.json, handoff.txt, QA</td><td>Triptych Split, Keyframe Sheet, Save Keyframe Manifest, Identity QA</td></tr>
+</tbody></table></div>
+<figure><img src="assets/turnaround.jpg" alt="Four orthographic renders of the mascot" loading="lazy"><figcaption>Anchors: the object rotates, the camera never moves, so every view shares one orthographic scale and pivot.</figcaption></figure>
+</section>
+<section id="graph"><h2>ComfyUI graph</h2>
+<p><code>workflows/02_triptych_to_keyframes.json</code>, 17 nodes, drawn from the workflow file. Reads top to bottom.</p>
+<div class="diagram"><svg class="graph" viewBox="0 0 760 985" role="img" aria-label="The ComfyUI graph, top to bottom" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" class="g-arrow"/></marker></defs>
+<path class="g-edge layout" d="M353,165 L457,165" marker-end="url(#arr)"/>
+<path class="g-edge" d="M243,835 L297,835" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,422 C400,448 330,448 330,473" marker-end="url(#arr)"/>
+<path class="g-edge" d="M330,527 C330,555 160,555 160,583" marker-end="url(#arr)"/>
+<path class="g-edge" d="M580,637 C580,665 400,665 400,693" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M160,637 C160,665 400,665 400,693" marker-end="url(#arr)"/>
+<path class="g-edge" d="M140,862 C140,890 140,890 140,918" marker-end="url(#arr)"/>
+<path class="g-edge" d="M135,77 C135,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M380,77 C380,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M625,77 C625,108 250,108 250,138" marker-end="url(#arr)"/>
+<path class="g-edge" d="M250,192 C250,222 650,222 650,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M250,192 C250,222 400,222 400,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M560,192 C560,222 400,222 400,253" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,307 C400,338 650,338 650,368" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,307 C400,338 400,338 400,368" marker-end="url(#arr)"/>
+<path class="g-edge" d="M400,747 C400,778 140,778 140,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="278" y="782">x3</text>
+<path class="g-edge" d="M400,747 C400,778 400,778 400,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="408" y="782">x3</text>
+<path class="g-edge" d="M400,747 C400,778 650,778 650,808" marker-end="url(#arr)"/>
+<text class="g-mult" x="533" y="782">x3</text>
+<path class="g-edge" d="M400,422 L400,428 Q400,436 408,436 L740,436 Q748,436 748,444 L748,561 Q748,569 740,569 L588,569 Q580,569 580,577 L580,583" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M160,637 L160,643 Q160,651 168,651 L731,651 Q739,651 739,659 L739,786 Q739,794 731,794 L658,794 Q650,794 650,802 L650,808" marker-end="url(#arr)"/>
+<path class="g-edge layout" d="M250,192 L250,198 Q250,206 242,206 L20,206 Q12,206 12,214 L12,561 Q12,569 20,569 L152,569 Q160,569 160,577 L160,583" marker-end="url(#arr)"/>
+<g class="g-node input"><rect x="32" y="23" width="206" height="54" rx="8"/><text class="g-name" x="135" y="45">LoadImage</text><text class="g-sub" x="135" y="63">front render</text></g>
+<g class="g-node input"><rect x="277" y="23" width="206" height="54" rx="8"/><text class="g-name" x="380" y="45">LoadImage</text><text class="g-sub" x="380" y="63">side render</text></g>
+<g class="g-node input"><rect x="522" y="23" width="206" height="54" rx="8"/><text class="g-name" x="625" y="45">LoadImage</text><text class="g-sub" x="625" y="63">back render</text></g>
+<g class="g-node ours"><rect x="457" y="138" width="206" height="54" rx="8"/><text class="g-name" x="560" y="160">MotionPrompt</text><text class="g-sub" x="560" y="178">you write the action here</text></g>
+<g class="g-node ours"><rect x="147" y="138" width="206" height="54" rx="8"/><text class="g-name" x="250" y="160">TriptychCompose</text><text class="g-sub" x="250" y="178">3 views -&gt; one canvas</text></g>
+<g class="g-node save"><rect x="575" y="253" width="150" height="54" rx="8"/><text class="g-name" x="650" y="275">SaveImage</text><text class="g-sub" x="650" y="293">keeps the submitted canvas</text></g>
+<g class="g-node cloud"><rect x="297" y="253" width="206" height="54" rx="8"/><text class="g-name" x="400" y="275">MiniMax H3  (paid)</text><text class="g-sub" x="400" y="293">animates all panels at once</text></g>
+<g class="g-node save"><rect x="575" y="368" width="150" height="54" rx="8"/><text class="g-name" x="650" y="390">SaveVideo</text><text class="g-sub" x="650" y="408">keeps the clip</text></g>
+<g class="g-node core"><rect x="297" y="368" width="206" height="54" rx="8"/><text class="g-name" x="400" y="390">GetVideoComponents</text><text class="g-sub" x="400" y="408">clip -&gt; frames</text></g>
+<g class="g-node core"><rect x="227" y="473" width="206" height="54" rx="8"/><text class="g-name" x="330" y="495">ImageFromBatch</text><text class="g-sub" x="330" y="513">frame 0 only</text></g>
+<g class="g-node ours"><rect x="57" y="583" width="206" height="54" rx="8"/><text class="g-name" x="160" y="605">TriptychRegister</text><text class="g-sub" x="160" y="623">undoes the model&#x27;s resize</text></g>
+<g class="g-node ours"><rect x="477" y="583" width="206" height="54" rx="8"/><text class="g-name" x="580" y="605">SampleKeyframes</text><text class="g-sub" x="580" y="623">16 frames + their times</text></g>
+<g class="g-node ours"><rect x="297" y="693" width="206" height="54" rx="8"/><text class="g-name" x="400" y="715">TriptychSplit</text><text class="g-sub" x="400" y="733">canvas -&gt; 3 view batches</text></g>
+<g class="g-node ours"><rect x="37" y="808" width="206" height="54" rx="8"/><text class="g-name" x="140" y="830">KeyframeSheet</text><text class="g-sub" x="140" y="848">labelled contact sheet</text></g>
+<g class="g-node save"><rect x="65" y="918" width="150" height="54" rx="8"/><text class="g-name" x="140" y="940">SaveImage</text><text class="g-sub" x="140" y="958">writes the sheet PNG</text></g>
+<g class="g-node ours"><rect x="297" y="808" width="206" height="54" rx="8"/><text class="g-name" x="400" y="830">SaveKeyframeManifest</text><text class="g-sub" x="400" y="848">keyframes.json, handoff.txt</text></g>
+<g class="g-node ours"><rect x="547" y="808" width="206" height="54" rx="8"/><text class="g-name" x="650" y="830">IdentityQA</text><text class="g-sub" x="650" y="848">drift gate: pass / fail</text></g>
+</svg></div>
+<ul class="legend"><li class="l-ours">pack node</li><li class="l-paid">partner node &mdash; remote, paid</li><li class="l-core">ComfyUI core</li><li class="l-save">writes a file</li><li class="l-layout">layout link</li></ul>
+<p class="note">Not drawn: timings, frame rate and the motion summary, which run into Keyframe Sheet and Save Keyframe Manifest.</p>
+<h3>Core nodes used</h3>
+<div class="tbl"><table><thead><tr><th>Node</th><th>Responsibility</th><th>Runs</th></tr></thead><tbody>
+<tr><td><code>LoadImage</code></td><td>Loads one orthographic render.</td><td>local</td></tr>
+<tr><td><code>MinimaxHailuo03FirstLastFrameNode</code></td><td>Animates the canvas from its first frame. The only remote, paid step.</td><td class="paid">remote · paid</td></tr>
+<tr><td><code>GetVideoComponents</code></td><td>Decodes the clip into frames and reports its frame rate.</td><td>local</td></tr>
+<tr><td><code>ImageFromBatch</code></td><td>Takes frame 0 out of the decoded batch.</td><td>local</td></tr>
+<tr><td><code>SaveVideo</code></td><td>Writes the clip to output/fmm/.</td><td>local</td></tr>
+<tr><td><code>SaveImage</code></td><td>Writes the submitted canvas and the finished sheet.</td><td>local</td></tr>
+</tbody></table></div></section>
+<section id="nodes"><h2>Nodes</h2>
+<p>The eight nodes in the pack, in the order the graph runs them. All are Pillow and numpy and run on the CPU. Contracts below are read from the node classes.</p>
+<article class="node" id="FMM_MotionPrompt">
+<div class="node-h"><h3>Motion Prompt</h3><code>FMM_MotionPrompt</code><span class="stage">Prompt</span></div>
+<p>Owns the video prompt. The user writes only the action; the node adds the scaffolding that locks the panels, naming each panel by position and describing the background read from the layout.</p><p class="rule"><span>Rule</span>The action is placed first, ahead of the layout constraints.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>action</code></td><td class="ty">STRING</td><td><span class="def">raises both arms straight overhead, holds for a moment, then…</span><div class="tip">Only what the character does. No camera or layout instructions -- those are added for you, in the order that was measured to work.</div></td></tr>
+<tr><td><code>subject</code></td><td class="ty">STRING</td><td><span class="def">clay toy character</span><div class="tip">How to refer to the character, e.g. &#x27;clay toy character&#x27;, &#x27;four-legged creature&#x27;.</div></td></tr>
+<tr><td><code>loop</code></td><td class="ty">BOOLEAN</td><td><span class="def">False</span></td></tr>
+<tr><td><code>layout</code> <span class="opt">optional</span></td><td class="ty">FMM_LAYOUT</td><td></td></tr>
+<tr><td><code>view_names</code> <span class="opt">optional</span></td><td class="ty">STRING</td><td><span class="def">front,side,back</span><div class="tip">Used only when no layout is connected.</div></td></tr>
+<tr><td><code>extra</code> <span class="opt">optional</span></td><td class="ty">STRING</td><td><div class="tip">Any further constraint, appended at the end.</div></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>prompt</code></td><td class="ty">STRING</td></tr>
+<tr><td><code>summary</code></td><td class="ty">STRING</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_TriptychCompose">
+<div class="node-h"><h3>Triptych Compose</h3><code>FMM_TriptychCompose</code><span class="stage">Compose</span></div>
+<p>Owns the canvas. Crops the three views by one shared window, lays them out left to right and pads to the nearest aspect ratio a video provider accepts.</p><p class="rule"><span>Rule</span>Refuses views of different sizes instead of rescaling them.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>view_a</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_b</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_c</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>names</code></td><td class="ty">STRING</td><td><span class="def">front,side,back</span></td></tr>
+<tr><td><code>gutter</code></td><td class="ty">INT</td><td><span class="def">20</span></td></tr>
+<tr><td><code>pad</code></td><td class="ty">INT</td><td><span class="def">20</span></td></tr>
+<tr><td><code>background</code></td><td class="ty">STRING</td><td><span class="def">#E4E4E6</span></td></tr>
+<tr><td><code>target_ratio</code></td><td class="ty">STRING</td><td><span class="def">21:9,16:9,4:3,1:1</span><div class="tip">Menu of aspect ratios; the closest to the strip is used and the canvas is padded to it. Partner video APIs centre-crop an off-menu canvas, which eats the outer panels.</div></td></tr>
+<tr><td><code>crop_margin</code></td><td class="ty">FLOAT</td><td><span class="def">0.08</span></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>triptych</code></td><td class="ty">IMAGE</td></tr>
+<tr><td><code>layout</code></td><td class="ty">FMM_LAYOUT</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_TriptychRegister">
+<div class="node-h"><h3>Triptych Register</h3><code>FMM_TriptychRegister</code><span class="stage">Register</span></div>
+<p>Owns the correction for whatever the video model did to the canvas. Matches frame 0 against the submitted canvas and writes the mapping into the layout.</p><p class="rule"><span>Rule</span>Reports skew and warns above 2%.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>triptych</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>first_frame</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>layout</code></td><td class="ty">FMM_LAYOUT</td><td></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>layout</code></td><td class="ty">FMM_LAYOUT</td></tr>
+<tr><td><code>report</code></td><td class="ty">STRING</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_SampleKeyframes">
+<div class="node-h"><h3>Sample Keyframes</h3><code>FMM_SampleKeyframes</code><span class="stage">Sample</span></div>
+<p>Owns timing. Picks N evenly spaced frames and records each one's frame index and time in seconds.</p><p class="rule"><span>Rule</span>Keeps frame 0, the rest pose; drops the last frame for loops.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>frames</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>count</code></td><td class="ty">INT</td><td><span class="def">16</span></td></tr>
+<tr><td><code>fps</code></td><td class="ty">FLOAT</td><td><span class="def">24.0</span></td></tr>
+<tr><td><code>loop</code></td><td class="ty">BOOLEAN</td><td><span class="def">False</span></td></tr>
+<tr><td><code>fps_in</code> <span class="opt">optional</span></td><td class="ty">FLOAT</td><td><div class="tip">Wire Get Video Components&#x27; frame-rate output here; it overrides the widget so the timings match the clip that actually came back.</div></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>keyframes</code></td><td class="ty">IMAGE</td></tr>
+<tr><td><code>timings</code></td><td class="ty">STRING</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_TriptychSplit">
+<div class="node-h"><h3>Triptych Split</h3><code>FMM_TriptychSplit</code><span class="stage">Split</span></div>
+<p>Owns the cut. Turns each sampled frame back into three per-view images using the corrected layout.</p><p class="rule"><span>Rule</span>Applies the registration transform before cutting.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>frames</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>layout</code></td><td class="ty">FMM_LAYOUT</td><td></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>view_a</code></td><td class="ty">IMAGE</td></tr>
+<tr><td><code>view_b</code></td><td class="ty">IMAGE</td></tr>
+<tr><td><code>view_c</code></td><td class="ty">IMAGE</td></tr>
+<tr><td><code>names</code></td><td class="ty">STRING</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_KeyframeSheet">
+<div class="node-h"><h3>Keyframe Sheet</h3><code>FMM_KeyframeSheet</code><span class="stage">Deliver</span></div>
+<p>Owns the human-readable sheet: N rows by three views, with the keyframe index and time on every row.</p><p class="rule"><span>Rule</span>Adds labels only here, never to an image a model will see.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>view_a</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_b</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_c</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>names</code></td><td class="ty">STRING</td><td><span class="def">front,side,back</span></td></tr>
+<tr><td><code>timings</code></td><td class="ty">STRING</td><td></td></tr>
+<tr><td><code>thumb</code></td><td class="ty">INT</td><td><span class="def">256</span></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>sheet</code></td><td class="ty">IMAGE</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_SaveKeyframeManifest">
+<div class="node-h"><h3>Save Keyframe Manifest</h3><code>FMM_SaveKeyframeManifest</code><span class="stage">Deliver</span><span class="stage out">output node</span></div>
+<p>Owns the handoff. Writes the per-view PNGs, keyframes.json and handoff.txt to the output folder.</p><p class="rule"><span>Rule</span>Requires real timings; will not run without them.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>view_a</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_b</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_c</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>names</code></td><td class="ty">STRING</td><td><span class="def">front,side,back</span></td></tr>
+<tr><td><code>timings</code></td><td class="ty">STRING</td><td></td></tr>
+<tr><td><code>subject_name</code></td><td class="ty">STRING</td><td><span class="def">character</span></td></tr>
+<tr><td><code>motion_description</code></td><td class="ty">STRING</td><td></td></tr>
+<tr><td><code>fps</code></td><td class="ty">FLOAT</td><td><span class="def">24.0</span></td></tr>
+<tr><td><code>loop</code></td><td class="ty">BOOLEAN</td><td><span class="def">False</span></td></tr>
+<tr><td><code>output_dir</code></td><td class="ty">STRING</td><td><span class="def">from_mesh_to_motion</span></td></tr>
+<tr><td><code>sheet</code> <span class="opt">optional</span></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>fps_in</code> <span class="opt">optional</span></td><td class="ty">FLOAT</td><td></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>manifest_path</code></td><td class="ty">STRING</td></tr>
+<tr><td><code>handoff_text</code></td><td class="ty">STRING</td></tr>
+</tbody></table></div></div></div></article>
+<article class="node" id="FMM_IdentityQA">
+<div class="node-h"><h3>Identity QA</h3><code>FMM_IdentityQA</code><span class="stage">Check</span><span class="stage out">output node</span></div>
+<p>Owns the go/no-go. Scores every panel for identity drift against its view's first frame and gates the sheet.</p><p class="rule"><span>Rule</span>Pose-blind measure: colour displacement weighted by the rest pose.</p>
+<div class="io"><div><h4>Inputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>view_a</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_b</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>view_c</code></td><td class="ty">IMAGE</td><td></td></tr>
+<tr><td><code>layout</code></td><td class="ty">FMM_LAYOUT</td><td></td></tr>
+<tr><td><code>ceiling</code></td><td class="ty">FLOAT</td><td><span class="def">0.03</span><div class="tip">Drift above this fails the sheet. 0.01 is codec noise, 0.03 a tint you would notice, 0.07 a character that has changed colour.</div></td></tr>
+</tbody></table></div></div><div><h4>Outputs</h4><div class="tbl"><table><tbody>
+<tr><td><code>report</code></td><td class="ty">STRING</td></tr>
+<tr><td><code>passed</code></td><td class="ty">BOOLEAN</td></tr>
+</tbody></table></div></div></div></article>
+</section>
+<section id="cli"><h2>Command line</h2>
+<p>The local half runs without ComfyUI: <code>python -m pipeline &lt;command&gt;</code>. Arguments are read from the parser.</p>
+<h3><code>anchors</code></h3><p>Render orthographic views of the rest-pose mesh</p>
+<div class="tbl"><table><thead><tr><th>Argument</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>--mesh</code> <span class="opt req">required</span></td><td class="ty"></td><td></td></tr>
+<tr><td><code>--out</code></td><td class="ty">out/02_anchors</td><td></td></tr>
+<tr><td><code>--size</code></td><td class="ty">768</td><td></td></tr>
+<tr><td><code>--views</code></td><td class="ty">front,side,back</td><td></td></tr>
+<tr><td><code>--passes</code></td><td class="ty">beauty</td><td></td></tr>
+<tr><td><code>--yaw-offset</code></td><td class="ty"></td><td>Rotate every view, for a mesh whose front is not facing -Y</td></tr>
+<tr><td><code>--margin</code></td><td class="ty">0.12</td><td></td></tr>
+<tr><td><code>--blender</code></td><td class="ty"></td><td></td></tr>
+</tbody></table></div>
+<h3><code>triptych</code></h3><p>Compose the anchors into one 21:9 canvas</p>
+<div class="tbl"><table><thead><tr><th>Argument</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>--anchors</code></td><td class="ty">out/02_anchors</td><td></td></tr>
+<tr><td><code>--out</code></td><td class="ty">out/03_triptych</td><td></td></tr>
+<tr><td><code>--views</code></td><td class="ty">front,side,back</td><td></td></tr>
+<tr><td><code>--pass-name</code></td><td class="ty">beauty</td><td></td></tr>
+<tr><td><code>--gutter</code></td><td class="ty">20</td><td></td></tr>
+<tr><td><code>--pad</code></td><td class="ty">20</td><td></td></tr>
+<tr><td><code>--crop-margin</code></td><td class="ty">0.08</td><td></td></tr>
+<tr><td><code>--ratio</code></td><td class="ty">21:9,16:9,4:3,1:1</td><td>Menu of aspect ratios to pad to; the closest is used. &quot;none&quot; to skip.</td></tr>
+</tbody></table></div>
+<h3><code>keyframes</code></h3><p>Sample the animated triptych into a sheet</p>
+<div class="tbl"><table><thead><tr><th>Argument</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>--video</code> <span class="opt req">required</span></td><td class="ty"></td><td></td></tr>
+<tr><td><code>--triptych</code> <span class="opt req">required</span></td><td class="ty"></td><td>The composed triptych PNG; its .layout.json sits beside it</td></tr>
+<tr><td><code>--out</code></td><td class="ty">out/05_keyframes</td><td></td></tr>
+<tr><td><code>-n</code></td><td class="ty">16</td><td></td></tr>
+<tr><td><code>--thumb</code></td><td class="ty">256</td><td></td></tr>
+<tr><td><code>--job</code></td><td class="ty"></td><td></td></tr>
+<tr><td><code>--keep-frames</code></td><td class="ty"></td><td></td></tr>
+<tr><td><code>--no-register</code></td><td class="ty"></td><td>Skip first-frame registration and stretch to fit instead</td></tr>
+</tbody></table></div>
+<h3><code>prompt</code></h3><p>Print the video prompt built from the job action</p>
+<div class="tbl"><table><thead><tr><th>Argument</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>--job</code></td><td class="ty"></td><td></td></tr>
+<tr><td><code>--triptych</code></td><td class="ty"></td><td>Take view names and background from this triptych&#x27;s layout</td></tr>
+<tr><td><code>--views</code></td><td class="ty">front,side,back</td><td></td></tr>
+</tbody></table></div>
+<h3><code>qa</code></h3><p>Score a finished sheet for identity drift</p>
+<div class="tbl"><table><thead><tr><th>Argument</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>--run</code></td><td class="ty">out/05_keyframes</td><td></td></tr>
+<tr><td><code>--triptych</code> <span class="opt req">required</span></td><td class="ty"></td><td></td></tr>
+<tr><td><code>-n</code></td><td class="ty">16</td><td></td></tr>
+<tr><td><code>--colors</code></td><td class="ty">6</td><td></td></tr>
+<tr><td><code>--ceiling</code></td><td class="ty">0.03</td><td></td></tr>
+<tr><td><code>--repaired</code></td><td class="ty"></td><td>Directory of repaired panels to compare against</td></tr>
+</tbody></table></div>
+</section>
+<section id="data"><h2>Data formats</h2>
+<h3>Output folder</h3><div class="tbl"><table><thead><tr><th>File</th><th>For</th><th>Contents</th></tr></thead><tbody><tr><td><code>keyframe_sheet.png</code></td><td>people, the rigging tool</td><td>16 rows × 3 views, each row labelled with its keyframe and time</td></tr><tr><td><code>views/kNN_&lt;view&gt;.png</code></td><td>tools</td><td>48 single images, one per keyframe and view</td></tr><tr><td><code>keyframes.json</code></td><td>tools</td><td>Motion, timing, views and provenance</td></tr><tr><td><code>handoff.txt</code></td><td>the rigging tool</td><td>How to read the sheet; paste beside it</td></tr><tr><td><code>qa.json</code></td><td>you</td><td>Drift per panel and the gate verdict (CLI); the graph shows the same as a report</td></tr></tbody></table></div>
+<figure><img src="assets/sheet-step.gif" alt="The sixteen keyframes stepping one at a time" loading="lazy"><figcaption>The sheet&rsquo;s content, one keyframe at a time.</figcaption></figure>
+<h3>Layout <span class="sub">FMM_LAYOUT / triptych_rest.layout.json</span></h3>
+<p>Where each panel sits on the canvas, in pixels. Travels through the graph as JSON; Triptych Register adds <code>transform</code> = [sx, sy, ox, oy].</p>
+<pre><code>{
+  &quot;width&quot;: 1904,
+  &quot;height&quot;: 816,
+  &quot;gutter&quot;: 20,
+  &quot;pad&quot;: 48,
+  &quot;background&quot;: [
+    228,
+    228,
+    230
+  ],
+  &quot;panels&quot;: [
+    {
+      &quot;view&quot;: &quot;front&quot;,
+      &quot;x&quot;: 20,
+      &quot;y&quot;: 48,
+      &quot;w&quot;: 608,
+      &quot;h&quot;: 720
+    },
+    {
+      &quot;view&quot;: &quot;side&quot;,
+      &quot;x&quot;: 648,
+      &quot;y&quot;: 48,
+      &quot;w&quot;: 608,
+      &quot;h&quot;: 720
+    },
+    {
+      &quot;view&quot;: &quot;back&quot;,
+      &quot;x&quot;: 1276,
+      &quot;y&quot;: 48,
+      &quot;w&quot;: 608,
+      &quot;h&quot;: 720
+    }
+  ]
+}</code></pre>
+<h3><code>keyframes.json</code></h3>
+<pre><code>{
+  &quot;schema_version&quot;: &quot;1.0&quot;,
+  &quot;generated_utc&quot;: &quot;2026-09-20T20:44:28+00:00&quot;,
+  &quot;subject&quot;: {
+    &quot;name&quot;: &quot;Mascot&quot;,
+    &quot;description&quot;: &quot;Stylized clay toy creature, one eye, two antennae, orange backpack&quot;,
+    &quot;mesh&quot;: &quot;out/01_mesh/mascot.glb&quot;,
+    &quot;license&quot;: &quot;CC0 - generated for this repo&quot;
+  },
+  &quot;motion&quot;: {
+    &quot;description&quot;: &quot;Raises both arms overhead, holds, then lowers them back down&quot;,
+    &quot;loop&quot;: false,
+    &quot;fps&quot;: 24.0,
+    &quot;duration_s&quot;: 5.0,
+    &quot;keyframe_count&quot;: 16
+  },
+  &quot;views&quot;: [
+    &quot;front&quot;,
+    &quot;side&quot;,
+    &quot;back&quot;
+  ],
+  &quot;projection&quot;: &quot;orthographic&quot;,
+  &quot;sheet&quot;: &quot;keyframe_sheet.png&quot;,
+  &quot;provenance&quot;: {
+    &quot;concept_model&quot;: &quot;bfl/flux-2-pro&quot;,
+    &quot;mesh_model&quot;: &quot;meshy-7&quot;,
+    &quot;video_model&quot;: &quot;MiniMax H3 (i2v)&quot;,
+    &quot;source_video&quot;: &quot;motion_test.mp4&quot;
+  },
+  &quot;keyframes&quot;: [
+    {&quot;index&quot;: 0, &quot;t&quot;: 0.0, &quot;frame&quot;: 0, &quot;views&quot;: {&quot;front&quot;: &quot;views/k00_front.png&quot;, &quot;side&quot;: &quot;views/k00_side.png&quot;, &quot;back&quot;: &quot;views/k00_back.png&quot;}},
+    {&quot;index&quot;: 1, &quot;t&quot;: 0.3333, &quot;frame&quot;: 8, &quot;views&quot;: {&quot;front&quot;: &quot;views/k01_front.png&quot;, &quot;side&quot;: &quot;views/k01_side.png&quot;, &quot;back&quot;: &quot;views/k01_back.png&quot;}},
+    ...
+  ]
+}</code></pre>
+<h3><code>handoff.txt</code></h3><pre class="prose"><code>Animate the rig you built from this mesh using the attached keyframe sheet.
+
+The sheet has 16 keyframes down the page and 3 orthographic views across it
+(front, side, back). Every view shares one camera scale and one pivot, so a limb at a
+given height in the front view is at that same height in the side and back
+views. Read the pose from all 3 views together, not from the front alone.
+
+Motion: Raises both arms overhead, holds, then lowers them back down
+Timing: 5.0s total at 24 fps, keyframe k00 at t=0.
+Loop: no
+
+Do not invent poses between keyframes beyond smooth interpolation, and do not
+change the character&#x27;s proportions -- the mesh is the authority on those, the
+sheet is the authority only on pose.
+</code></pre>
+<h3><code>qa.json</code></h3><pre><code>{
+  &quot;report&quot;: {
+    &quot;views&quot;: {
+      &quot;front&quot;: {
+        &quot;panels&quot;: 16,
+        &quot;drift_mean&quot;: 0.0141,
+        &quot;drift_max&quot;: 0.0194
+      },
+      &quot;side&quot;: {
+        &quot;panels&quot;: 16,
+        &quot;drift_mean&quot;: 0.0078,
+        &quot;drift_max&quot;: 0.0188
+      },
+      &quot;back&quot;: {
+        &quot;panels&quot;: 16,
+        &quot;drift_mean&quot;: 0.0107,
+        &quot;drift_max&quot;: 0.0209
+      }
+    },
+    &quot;overall&quot;: {
+      &quot;panels&quot;: 48,
+      &quot;drift_mean&quot;: 0.0109,
+      &quot;drift_max&quot;: 0.0209
+    },
+    &quot;gate&quot;: {
+      &quot;pass&quot;: true,
+      &quot;notes&quot;: [
+        &quot;identity holds: drift peaks at 0.021, under the 0.030 ceiling&quot;
+      ]
+    }
+  },
+  &quot;rows&quot;: [
+    {
+      &quot;drift&quot;: 0.0079,
+      &quot;index&quot;: 0,
+      &quot;view&quot;: &quot;front&quot;
+    },
+    {
+      &quot;drift&quot;: 0.0078,
+      &quot;index&quot;: 1,
+      &quot;view&quot;: &quot;front&quot;
+    },
+    &quot;...&quot;
+  ]
+}</code></pre>
+</section>
+<section id="metrics"><h2>Metrics</h2>
+<h3>Identity drift</h3>
+<p>How far a character&rsquo;s colours have moved from its rest pose, measured so that a change of pose does not count. Each view&rsquo;s first keyframe is reduced to six dominant colours by k-means; every panel&rsquo;s subject pixels are assigned to the nearest of them; drift is the displacement of each colour, weighted by the <em>rest pose&rsquo;s</em> colour mix.</p>
+<pre class="formula"><code>drift = Σⱼ wⱼ · ‖ mean(panel pixels → cⱼ) − cⱼ ‖  /  (255 · Σⱼ wⱼ)
+        over colours j with ≥ 40 assigned pixels; cⱼ, wⱼ from k00 (k = 6)</code></pre>
+<div class="tbl"><table><thead><tr><th>Drift</th><th>Reads as</th></tr></thead><tbody><tr><td class="num">≈ 0.01</td><td>video compression</td></tr><tr><td class="num">0.03</td><td>a tint you would notice &mdash; <strong>the gate</strong></td></tr><tr><td class="num">≈ 0.07</td><td>a character that has changed colour</td></tr></tbody></table></div>
+<p>Weighting by the rest pose is what keeps it pose-blind: a raised arm changes how much of a colour is visible, not what the colour is. On the mascot, the measure moves 0.006&ndash;0.016 between arms-down and arms-up frames, while an 8/255 red tint reads three times its baseline.</p>
+<h3>Registration</h3>
+<p>Frame 0 of an image-to-video clip is nearly the submitted canvas, so the mapping back is read off the two content bounding boxes (flat background, tolerance 18/255):</p>
+<pre class="formula"><code>sx = w_canvas / w_frame     sy = h_canvas / h_frame
+skew = |sx − sy| / max(sx, sy)      warning above 2 %</code></pre>
+<p>Accuracy of the split panels against the source, mean absolute error per 255:</p>
+<div class="tbl"><table><thead><tr><th>What the model returned</th><th class="num">Plain split</th><th class="num">Registered</th></tr></thead><tbody>
+<tr><td>Rescaled (MiniMax H3)</td><td class="num">0.28</td><td class="num">0.85</td></tr>
+<tr><td>Letterboxed into 16:9</td><td class="num">18.35</td><td class="num">0.89</td></tr>
+<tr><td>Centre-cropped 6%</td><td class="num">20.19</td><td class="num">0.54</td></tr>
+</tbody></table></div>
+<h3>Thresholds</h3>
+<div class="tbl"><table><thead><tr><th>Check</th><th>Value</th><th>Where</th></tr></thead><tbody><tr><td>Identity drift ceiling</td><td class="num">0.03</td><td>Identity QA · <code>pipeline qa --ceiling</code></td></tr><tr><td>Registration skew warning</td><td class="num">2 %</td><td>Triptych Register · <code>pipeline keyframes</code></td></tr><tr><td>Background tolerance</td><td class="num">18 / 255</td><td>content boxes, subject masks</td></tr><tr><td>Palette size</td><td class="num">6</td><td><code>pipeline qa --colors</code></td></tr></tbody></table></div></section>
+<section id="results"><h2>Results</h2>
+<p>Three characters with different body plans, each run end to end once: concept image, Meshy 7 mesh, Blender anchors, MiniMax H3 at 768P for five seconds, sixteen keyframes.</p>
+<figure class="chart-fig"><svg class="chart" viewBox="0 0 640 250" role="img" aria-label="Maximum identity drift per view for each character"><line class="grid" x1="46" x2="634" y1="210.0" y2="210.0"/><text class="tick" x="38" y="214.0">0.00</text><line class="grid" x1="46" x2="634" y1="177.7" y2="177.7"/><text class="tick" x="38" y="181.7">0.01</text><line class="grid" x1="46" x2="634" y1="145.3" y2="145.3"/><text class="tick" x="38" y="149.3">0.02</text><line class="grid" x1="46" x2="634" y1="113.0" y2="113.0"/><text class="tick" x="38" y="117.0">0.03</text><line class="grid" x1="46" x2="634" y1="80.7" y2="80.7"/><text class="tick" x="38" y="84.7">0.04</text><line class="grid" x1="46" x2="634" y1="48.3" y2="48.3"/><text class="tick" x="38" y="52.3">0.05</text><line class="grid" x1="46" x2="634" y1="16.0" y2="16.0"/><text class="tick" x="38" y="20.0">0.06</text><rect class="bar v0" x="92.3" y="147.3" width="30" height="62.7" rx="2"/><text class="val" x="107.3" y="142.3">0.019</text><rect class="bar v1" x="128.3" y="149.2" width="30" height="60.8" rx="2"/><text class="val" x="143.3" y="144.2">0.019</text><rect class="bar v2" x="164.3" y="142.4" width="30" height="67.6" rx="2"/><text class="val" x="179.3" y="137.4">0.021</text><text class="grp" x="143.3" y="236">Mascot</text><rect class="bar v0" x="287.0" y="138.5" width="30" height="71.5" rx="2"/><text class="val" x="302.0" y="133.5">0.022</text><rect class="bar v1" x="323.0" y="170.6" width="30" height="39.4" rx="2"/><text class="val" x="338.0" y="165.6">0.012</text><rect class="bar v2" x="359.0" y="136.3" width="30" height="73.7" rx="2"/><text class="val" x="374.0" y="131.3">0.023</text><text class="grp" x="338.0" y="236">Quadruped</text><rect class="bar v0" x="481.7" y="116.9" width="30" height="93.1" rx="2"/><text class="val" x="496.7" y="111.9">0.029</text><rect class="bar v1" x="517.7" y="41.2" width="30" height="168.8" rx="2"/><text class="val" x="532.7" y="36.2">0.052</text><rect class="bar v2" x="553.7" y="67.7" width="30" height="142.3" rx="2"/><text class="val" x="568.7" y="62.7">0.044</text><text class="grp" x="532.7" y="236">Thin robot</text><line class="ceil" x1="46" x2="634" y1="113.0" y2="113.0"/><text class="ceil-l" x="52" y="107.0">gate 0.03</text></svg><figcaption>Maximum identity drift per view (front, side, back), against the 0.03 gate.</figcaption></figure>
+<ul class="legend chart-legend"><li class="v0">front</li><li class="v1">side</li><li class="v2">back</li></ul>
+<div class="tbl"><table><thead><tr><th>Character</th><th>Canvas</th><th>Ratio</th><th>Clip</th><th class="num">Reg. sx × sy</th><th class="num">Skew</th><th class="num">Drift mean</th><th class="num">Drift max</th><th>Gate</th></tr></thead><tbody>
+<tr><td><strong>Mascot</strong></td><td>1904×816</td><td class="num">2.333</td><td>1536×672, 124 fr @ 24 fps</td><td class="num">1.2387 × 1.2133</td><td class="num">2.05 %</td><td class="num">0.0109</td><td class="num">0.0209</td><td><span class="pill ok">pass</span></td></tr>
+<tr><td><strong>Quadruped</strong></td><td>2240×960</td><td class="num">2.333</td><td>1536×672, 124 fr @ 24 fps</td><td class="num">1.4579 × 1.4215</td><td class="num">2.49 %</td><td class="num">0.0119</td><td class="num">0.0228</td><td><span class="pill ok">pass</span></td></tr>
+<tr><td><strong>Thin robot</strong></td><td>1351×760</td><td class="num">1.778</td><td>1344×768, 124 fr @ 24 fps</td><td class="num">1.0051 × 0.9888</td><td class="num">1.62 %</td><td class="num">0.0191</td><td class="num">0.0522</td><td><span class="pill out">outside scope</span></td></tr>
+</tbody></table></div>
+<article class="result" id="r-mascot"><h3>Mascot</h3><p class="body">Biped clay toy: one eye, antennae, rigid backpack &middot; motion: <em>Raises both arms overhead, holds, then lowers them back down</em></p>
+<figure><img src="assets/triptych-mascot.jpg" alt="Mascot rest-pose triptych" loading="lazy"><figcaption>Rest-pose canvas, 1904×816 (21:9).</figcaption></figure>
+<div class="pair"><figure><img src="assets/triptych-motion.gif" alt="Mascot animated canvas" loading="lazy"><figcaption>Animated canvas.</figcaption></figure>
+<figure><img src="assets/sheet-mascot.jpg" alt="Mascot keyframes k00, k04, k07, k10, k13" loading="lazy"><figcaption>Keyframes k00, k04, k07, k10, k13 as cut from the sheet.</figcaption></figure></div>
+<div class="tbl"><table class="mini"><thead><tr><th>View</th><th class="num">Mean drift</th><th class="num">Max drift</th></tr></thead><tbody>
+<tr><td>front</td><td class="num">0.0141</td><td class="num">0.0194</td></tr>
+<tr><td>side</td><td class="num">0.0078</td><td class="num">0.0188</td></tr>
+<tr><td>back</td><td class="num">0.0107</td><td class="num">0.0209</td></tr>
+</tbody></table></div>
+<p class="note">Timing: 16 keyframes across a 5.17 s clip at 24 fps &mdash; k00 0.00s, k03 1.04s, k06 2.04s, k09 3.08s, k12 4.08s, k15 5.12s.</p>
+</article>
+<article class="result" id="r-quadruped"><h3>Quadruped</h3><p class="body">Four-legged creature: long tail, large ears &middot; motion: <em>Rears up onto its hind legs, balances, then drops back onto all fours</em></p>
+<figure><img src="assets/triptych-quadruped.jpg" alt="Quadruped rest-pose triptych" loading="lazy"><figcaption>Rest-pose canvas, 2240×960 (21:9).</figcaption></figure>
+<div class="pair"><figure><img src="assets/quadruped-motion.gif" alt="Quadruped animated canvas" loading="lazy"><figcaption>Animated canvas.</figcaption></figure>
+<figure><img src="assets/sheet-quadruped.jpg" alt="Quadruped keyframes k00, k04, k07, k10, k13" loading="lazy"><figcaption>Keyframes k00, k04, k07, k10, k13 as cut from the sheet.</figcaption></figure></div>
+<div class="tbl"><table class="mini"><thead><tr><th>View</th><th class="num">Mean drift</th><th class="num">Max drift</th></tr></thead><tbody>
+<tr><td>front</td><td class="num">0.0130</td><td class="num">0.0221</td></tr>
+<tr><td>side</td><td class="num">0.0089</td><td class="num">0.0122</td></tr>
+<tr><td>back</td><td class="num">0.0138</td><td class="num">0.0228</td></tr>
+</tbody></table></div>
+<p class="note">Timing: 16 keyframes across a 5.17 s clip at 24 fps &mdash; k00 0.00s, k03 1.04s, k06 2.04s, k09 3.08s, k12 4.08s, k15 5.12s.</p>
+</article>
+<article class="result" id="r-thin-robot"><h3>Thin robot</h3><p class="body">Tall, wire-thin limbs, loose scarf &middot; motion: <em>Raises its right arm and waves twice, then lowers it</em></p>
+<figure><img src="assets/triptych-thin-robot.jpg" alt="Thin robot rest-pose triptych" loading="lazy"><figcaption>Rest-pose canvas, 1351×760 (16:9).</figcaption></figure>
+<div class="pair"><figure><img src="assets/thin-robot-motion.gif" alt="Thin robot animated canvas" loading="lazy"><figcaption>Animated canvas.</figcaption></figure>
+<figure><img src="assets/sheet-thin-robot.jpg" alt="Thin robot keyframes k00, k04, k07, k10, k13" loading="lazy"><figcaption>Keyframes k00, k04, k07, k10, k13 as cut from the sheet.</figcaption></figure></div>
+<div class="tbl"><table class="mini"><thead><tr><th>View</th><th class="num">Mean drift</th><th class="num">Max drift</th></tr></thead><tbody>
+<tr><td>front</td><td class="num">0.0155</td><td class="num">0.0288</td></tr>
+<tr><td>side</td><td class="num">0.0223</td><td class="num">0.0522</td></tr>
+<tr><td>back</td><td class="num">0.0195</td><td class="num">0.0440</td></tr>
+</tbody></table></div>
+<p class="note">Timing: 16 keyframes across a 5.17 s clip at 24 fps &mdash; k00 0.00s, k03 1.04s, k06 2.04s, k09 3.08s, k12 4.08s, k15 5.12s.</p>
+</article>
+<p>The thin robot&rsquo;s panels stay synchronised &mdash; its one-sided wave appears mirrored correctly in the back view on every keyframe &mdash; while its wire-thin profile and loose scarf fall outside the pipeline&rsquo;s scope and are flagged by the gate.</p>
+</section>
+<section id="scope"><h2>Scope</h2>
+<div class="scope"><div><h3>Designed for</h3><ul><li>Chunky, rigid or near-rigid characters, readable from every side, in an A-pose &mdash; humanoid or not</li><li>Body motion performed in place, one beat per run: raising arms, waving, crouching, stretching, rearing up, nodding, idles</li><li>One clip per run, 4&ndash;15 s as MiniMax H3 accepts (runs here used 5 s); 16 keyframes by default</li></ul></div><div><h3>Outside its scope</h3><ul><li>Travelling across the frame &mdash; in-place cycles are in scope</li><li>Turning on the spot &mdash; the panels are defined as front, side, back</li><li>Secondary motion: cloth, hair, free-moving parts</li><li>Multi-beat sequences &mdash; built from several runs sharing end poses</li><li>Very thin silhouettes</li></ul></div><div><h3>Stays with you</h3><ul><li>Rigging and the final animation &mdash; Astra, Meshy or a person</li><li>The orthographic renders, in Blender with the bundled CLI</li><li>A last look at the side column</li></ul></div></div></section>
+<section id="usage"><h2>Usage</h2><ol class="steps"><li><strong>Install</strong> ComfyUI and the pack: ComfyUI Manager, or <code>comfy node install from-mesh-to-motion</code>.</li><li><strong>Sign in</strong> to a Comfy account in ComfyUI, or set <em>Settings → API Keys → Comfy API Key</em>. Only the MiniMax node uses it.</li><li><strong>Render the views</strong> from the pack folder: <code>python -m pipeline anchors --mesh character.glb --out anchors</code> (add <code>--yaw-offset 90</code> if the character faces the wrong way).</li><li><strong>Open</strong> <code>workflows/02_triptych_to_keyframes.json</code> and load <code>beauty_front</code>, <code>beauty_side</code>, <code>beauty_back</code> into the three Load Image nodes.</li><li><strong>Write the action</strong> in Motion Prompt &mdash; only what the character does.</li><li><strong>Queue</strong>: one paid call, a few minutes; change the seed on the video node for another take.</li><li><strong>Check</strong> Triptych Register&rsquo;s skew and Identity QA&rsquo;s verdict.</li><li><strong>Hand over</strong> the rigged rest-pose mesh, <code>keyframe_sheet.png</code> and <code>handoff.txt</code> from <code>ComfyUI/output/from_mesh_to_motion/</code>.</li></ol></section>
+<section id="package"><h2>Package</h2>
+<p>Published to the Comfy Registry as <code>from-mesh-to-motion</code> 0.1.1 under <code>@meryboth</code>; a version bump in <code>pyproject.toml</code> publishes through GitHub Actions. The registry package is 27 files, 161 KB; example renders, meshes, clips and the write-ups stay in the repository.</p>
+<div class="tbl"><table><thead><tr><th>Shipped file</th><th class="num">Size</th></tr></thead><tbody>
+<tr><td><code>.comfyignore</code></td><td class="num">0.3 KB</td></tr>
+<tr><td><code>.github/workflows/publish_action.yml</code></td><td class="num">0.4 KB</td></tr>
+<tr><td><code>.gitignore</code></td><td class="num">0.2 KB</td></tr>
+<tr><td><code>LICENSE</code></td><td class="num">1.0 KB</td></tr>
+<tr><td><code>README.md</code></td><td class="num">16.8 KB</td></tr>
+<tr><td><code>__init__.py</code></td><td class="num">0.4 KB</td></tr>
+<tr><td><code>blender/render_ortho.py</code></td><td class="num">9.9 KB</td></tr>
+<tr><td><code>comfy_nodes/__init__.py</code></td><td class="num">0.1 KB</td></tr>
+<tr><td><code>comfy_nodes/nodes.py</code></td><td class="num">23.2 KB</td></tr>
+<tr><td><code>config/job.example.json</code></td><td class="num">0.5 KB</td></tr>
+<tr><td><code>config/job.json</code></td><td class="num">0.5 KB</td></tr>
+<tr><td><code>pipeline/__init__.py</code></td><td class="num">0.0 KB</td></tr>
+<tr><td><code>pipeline/__main__.py</code></td><td class="num">0.0 KB</td></tr>
+<tr><td><code>pipeline/cli.py</code></td><td class="num">14.2 KB</td></tr>
+<tr><td><code>pipeline/manifest.py</code></td><td class="num">3.9 KB</td></tr>
+<tr><td><code>pipeline/prompt.py</code></td><td class="num">5.4 KB</td></tr>
+<tr><td><code>pipeline/repair.py</code></td><td class="num">7.7 KB</td></tr>
+<tr><td><code>pipeline/sheet.py</code></td><td class="num">16.0 KB</td></tr>
+<tr><td><code>pipeline/video.py</code></td><td class="num">3.6 KB</td></tr>
+<tr><td><code>pyproject.toml</code></td><td class="num">0.7 KB</td></tr>
+<tr><td><code>requirements.txt</code></td><td class="num">0.4 KB</td></tr>
+<tr><td><code>scripts/build_graph_diagram.py</code></td><td class="num">7.8 KB</td></tr>
+<tr><td><code>scripts/build_workflows.py</code></td><td class="num">15.7 KB</td></tr>
+<tr><td><code>workflows/01_concept_to_mesh.json</code></td><td class="num">3.7 KB</td></tr>
+<tr><td><code>workflows/02_triptych_to_keyframes.json</code></td><td class="num">23.5 KB</td></tr>
+<tr><td><code>workflows/api/01_concept_to_mesh.api.json</code></td><td class="num">0.8 KB</td></tr>
+<tr><td><code>workflows/api/02_triptych_to_keyframes.api.json</code></td><td class="num">4.3 KB</td></tr>
+</tbody></table></div>
+<h3>Models used in the documented runs</h3><div class="tbl"><table><tbody><tr><td>Concept images</td><td>Flux 2 Pro</td></tr><tr><td>Meshes</td><td>Meshy 7, 25k-face quad remesh, 2k texture</td></tr><tr><td>Animation</td><td>MiniMax H3 image-to-video, 768P, 5 s, seed 11</td></tr><tr><td>Anchors</td><td>Blender 5.1 EEVEE, 768 px square, orthographic</td></tr></tbody></table></div>
+<p class="note">Code MIT; the characters, meshes and renders are CC0, generated for this project. Generated 2026-09-22 by <code>scripts/build_reference.py</code>.</p>
+</section>
+</main></div></div>
+</body>
+</html>

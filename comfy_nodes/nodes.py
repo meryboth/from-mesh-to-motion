@@ -238,9 +238,9 @@ class TriptychRegister:
     """Correct the layout for however the video model reshaped the canvas.
 
     Video models do not return what they were given. A 1904x816 canvas came back
-    as 1536x672 in testing -- not a uniform rescale. Splitting on the original
-    pixel columns after a naive resize shears the panels by about 2% and cuts the
-    character's feet off.
+    as 1536x672 in testing -- a 2% non-uniform rescale -- and providers that
+    letterbox or crop move the panels far more. Splitting on the original pixel
+    columns then cuts the wrong part of the frame.
 
     The first frame of an image-to-video clip is very nearly the submitted image,
     so the mapping can be read off the two content bounding boxes.

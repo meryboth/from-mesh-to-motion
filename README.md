@@ -21,6 +21,8 @@ panels agree — they agree because they are the same picture.</sub>
 > generated asset is machine-made.
 
 **Full write-up:** [`docs/report/index.html`](docs/report/index.html) — the method, the measurements, and the scope.
+**Technical reference:** [`docs/report/reference.html`](docs/report/reference.html) — every node's contract, the CLI, the data
+formats, the metrics and the results per character, generated from the code and the runs by `scripts/build_reference.py`.
 
 ---
 

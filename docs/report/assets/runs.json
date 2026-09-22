@@ -1,0 +1,389 @@
+[
+  {
+    "key": "mascot",
+    "name": "Mascot",
+    "body": "Biped clay toy: one eye, antennae, rigid backpack",
+    "gif": "triptych-motion.gif",
+    "canvas": [
+      1904,
+      816
+    ],
+    "panel": [
+      608,
+      720
+    ],
+    "ratio": 2.3333,
+    "motion": "Raises both arms overhead, holds, then lowers them back down",
+    "fps": 24.0,
+    "duration_s": 5.0,
+    "keyframes": [
+      {
+        "i": 0,
+        "frame": 0,
+        "t": 0.0
+      },
+      {
+        "i": 1,
+        "frame": 8,
+        "t": 0.3333
+      },
+      {
+        "i": 2,
+        "frame": 16,
+        "t": 0.6667
+      },
+      {
+        "i": 3,
+        "frame": 25,
+        "t": 1.0417
+      },
+      {
+        "i": 4,
+        "frame": 33,
+        "t": 1.375
+      },
+      {
+        "i": 5,
+        "frame": 41,
+        "t": 1.7083
+      },
+      {
+        "i": 6,
+        "frame": 49,
+        "t": 2.0417
+      },
+      {
+        "i": 7,
+        "frame": 57,
+        "t": 2.375
+      },
+      {
+        "i": 8,
+        "frame": 66,
+        "t": 2.75
+      },
+      {
+        "i": 9,
+        "frame": 74,
+        "t": 3.0833
+      },
+      {
+        "i": 10,
+        "frame": 82,
+        "t": 3.4167
+      },
+      {
+        "i": 11,
+        "frame": 90,
+        "t": 3.75
+      },
+      {
+        "i": 12,
+        "frame": 98,
+        "t": 4.0833
+      },
+      {
+        "i": 13,
+        "frame": 107,
+        "t": 4.4583
+      },
+      {
+        "i": 14,
+        "frame": 115,
+        "t": 4.7917
+      },
+      {
+        "i": 15,
+        "frame": 123,
+        "t": 5.125
+      }
+    ],
+    "views": {
+      "front": {
+        "mean": 0.0141,
+        "max": 0.0194
+      },
+      "side": {
+        "mean": 0.0078,
+        "max": 0.0188
+      },
+      "back": {
+        "mean": 0.0107,
+        "max": 0.0209
+      }
+    },
+    "drift_mean": 0.0109,
+    "drift_max": 0.0209,
+    "passed": true,
+    "clip": {
+      "w": 1536,
+      "h": 672,
+      "frames": 124,
+      "fps": 24.0,
+      "seconds": 5.167
+    },
+    "registration": {
+      "sx": 1.2387,
+      "sy": 1.2133,
+      "skew_pct": 2.05
+    }
+  },
+  {
+    "key": "quadruped",
+    "name": "Quadruped",
+    "body": "Four-legged creature: long tail, large ears",
+    "gif": "quadruped-motion.gif",
+    "canvas": [
+      2240,
+      960
+    ],
+    "panel": [
+      720,
+      536
+    ],
+    "ratio": 2.3333,
+    "motion": "Rears up onto its hind legs, balances, then drops back onto all fours",
+    "fps": 24.0,
+    "duration_s": 5.0,
+    "keyframes": [
+      {
+        "i": 0,
+        "frame": 0,
+        "t": 0.0
+      },
+      {
+        "i": 1,
+        "frame": 8,
+        "t": 0.3333
+      },
+      {
+        "i": 2,
+        "frame": 16,
+        "t": 0.6667
+      },
+      {
+        "i": 3,
+        "frame": 25,
+        "t": 1.0417
+      },
+      {
+        "i": 4,
+        "frame": 33,
+        "t": 1.375
+      },
+      {
+        "i": 5,
+        "frame": 41,
+        "t": 1.7083
+      },
+      {
+        "i": 6,
+        "frame": 49,
+        "t": 2.0417
+      },
+      {
+        "i": 7,
+        "frame": 57,
+        "t": 2.375
+      },
+      {
+        "i": 8,
+        "frame": 66,
+        "t": 2.75
+      },
+      {
+        "i": 9,
+        "frame": 74,
+        "t": 3.0833
+      },
+      {
+        "i": 10,
+        "frame": 82,
+        "t": 3.4167
+      },
+      {
+        "i": 11,
+        "frame": 90,
+        "t": 3.75
+      },
+      {
+        "i": 12,
+        "frame": 98,
+        "t": 4.0833
+      },
+      {
+        "i": 13,
+        "frame": 107,
+        "t": 4.4583
+      },
+      {
+        "i": 14,
+        "frame": 115,
+        "t": 4.7917
+      },
+      {
+        "i": 15,
+        "frame": 123,
+        "t": 5.125
+      }
+    ],
+    "views": {
+      "front": {
+        "mean": 0.013,
+        "max": 0.0221
+      },
+      "side": {
+        "mean": 0.0089,
+        "max": 0.0122
+      },
+      "back": {
+        "mean": 0.0138,
+        "max": 0.0228
+      }
+    },
+    "drift_mean": 0.0119,
+    "drift_max": 0.0228,
+    "passed": true,
+    "clip": {
+      "w": 1536,
+      "h": 672,
+      "frames": 124,
+      "fps": 24.0,
+      "seconds": 5.167
+    },
+    "registration": {
+      "sx": 1.4579,
+      "sy": 1.4215,
+      "skew_pct": 2.49
+    }
+  },
+  {
+    "key": "thin-robot",
+    "name": "Thin robot",
+    "body": "Tall, wire-thin limbs, loose scarf",
+    "gif": "thin-robot-motion.gif",
+    "canvas": [
+      1351,
+      760
+    ],
+    "panel": [
+      400,
+      720
+    ],
+    "ratio": 1.7776,
+    "motion": "Raises its right arm and waves twice, then lowers it",
+    "fps": 24.0,
+    "duration_s": 5.0,
+    "keyframes": [
+      {
+        "i": 0,
+        "frame": 0,
+        "t": 0.0
+      },
+      {
+        "i": 1,
+        "frame": 8,
+        "t": 0.3333
+      },
+      {
+        "i": 2,
+        "frame": 16,
+        "t": 0.6667
+      },
+      {
+        "i": 3,
+        "frame": 25,
+        "t": 1.0417
+      },
+      {
+        "i": 4,
+        "frame": 33,
+        "t": 1.375
+      },
+      {
+        "i": 5,
+        "frame": 41,
+        "t": 1.7083
+      },
+      {
+        "i": 6,
+        "frame": 49,
+        "t": 2.0417
+      },
+      {
+        "i": 7,
+        "frame": 57,
+        "t": 2.375
+      },
+      {
+        "i": 8,
+        "frame": 66,
+        "t": 2.75
+      },
+      {
+        "i": 9,
+        "frame": 74,
+        "t": 3.0833
+      },
+      {
+        "i": 10,
+        "frame": 82,
+        "t": 3.4167
+      },
+      {
+        "i": 11,
+        "frame": 90,
+        "t": 3.75
+      },
+      {
+        "i": 12,
+        "frame": 98,
+        "t": 4.0833
+      },
+      {
+        "i": 13,
+        "frame": 107,
+        "t": 4.4583
+      },
+      {
+        "i": 14,
+        "frame": 115,
+        "t": 4.7917
+      },
+      {
+        "i": 15,
+        "frame": 123,
+        "t": 5.125
+      }
+    ],
+    "views": {
+      "front": {
+        "mean": 0.0155,
+        "max": 0.0288
+      },
+      "side": {
+        "mean": 0.0223,
+        "max": 0.0522
+      },
+      "back": {
+        "mean": 0.0195,
+        "max": 0.044
+      }
+    },
+    "drift_mean": 0.0191,
+    "drift_max": 0.0522,
+    "passed": false,
+    "clip": {
+      "w": 1344,
+      "h": 768,
+      "frames": 124,
+      "fps": 24.0,
+      "seconds": 5.167
+    },
+    "registration": {
+      "sx": 1.0051,
+      "sy": 0.9888,
+      "skew_pct": 1.62
+    }
+  }
+]
